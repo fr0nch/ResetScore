@@ -106,16 +106,21 @@ package s2sdk
 */
 import "C"
 import (
-	"github.com/untrustedmodders/go-plugify"
+	"errors"
 	"reflect"
+	"runtime"
 	"unsafe"
+
+	"github.com/untrustedmodders/go-plugify"
 )
 
+var _ = errors.New("")
 var _ = reflect.TypeOf(0)
+var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.Plugin.Loaded
 
-// Generated with https://github.com/untrustedmodders/plugify-module-golang/blob/main/generator/generator.py from s2sdk (group: protobuf)
+// Generated from s2sdk (group: protobuf)
 
 // HookUserMessage
 //
@@ -2640,4 +2645,1348 @@ func PbAddQAngle(userMessage uintptr, fieldName string, value plugify.Vector3) b
 		},
 	}.Do()
 	return __retVal
+}
+
+var (
+	UserMessageErrEmptyHandle = errors.New("UserMessage: empty handle")
+)
+
+// UserMessage - RAII wrapper for UserMessage pointer.
+type UserMessage struct {
+	handle    uintptr
+	cleanup   runtime.Cleanup
+	ownership ownership
+	noCopy    noCopy
+}
+
+// NewUserMessageUserMessageCreateFromSerializable - Creates a UserMessage from a serializable message.
+//
+//	@param msgSerializable: The serializable message.
+//	@param message: The network message.
+//	@param recipientMask: The recipient mask.
+func NewUserMessageUserMessageCreateFromSerializable(msgSerializable uintptr, message uintptr, recipientMask uint64) *UserMessage {
+	return NewUserMessageOwned(UserMessageCreateFromSerializable(msgSerializable, message, recipientMask))
+}
+
+// NewUserMessageUserMessageCreateFromName - Creates a UserMessage from a message name.
+//
+//	@param messageName: The name of the message.
+func NewUserMessageUserMessageCreateFromName(messageName string) *UserMessage {
+	return NewUserMessageOwned(UserMessageCreateFromName(messageName))
+}
+
+// NewUserMessageUserMessageCreateFromId - Creates a UserMessage from a message ID.
+//
+//	@param messageId: The ID of the message.
+func NewUserMessageUserMessageCreateFromId(messageId int16) *UserMessage {
+	return NewUserMessageOwned(UserMessageCreateFromId(messageId))
+}
+
+// NewUserMessageBorrowed creates a UserMessage from a borrowed handle
+func NewUserMessageBorrowed(handle uintptr) *UserMessage {
+	if handle == 0 {
+		return &UserMessage{}
+	}
+	return &UserMessage{
+		handle:    handle,
+		ownership: Borrowed,
+	}
+}
+
+// NewUserMessageOwned creates a UserMessage from an owned handle
+func NewUserMessageOwned(handle uintptr) *UserMessage {
+	if handle == 0 {
+		return &UserMessage{}
+	}
+	w := &UserMessage{
+		handle:    handle,
+		ownership: Owned,
+	}
+	w.cleanup = runtime.AddCleanup(w, w.finalize, struct{}{})
+	return w
+}
+
+// finalize is the finalizer function (like C++ destructor)
+func (w *UserMessage) finalize(_ struct{}) {
+	if plugify.Plugin.Loaded {
+		w.destroy()
+	}
+}
+
+// destroy cleans up owned handles
+func (w *UserMessage) destroy() {
+	if w.handle != 0 && w.ownership == Owned {
+		UserMessageDestroy(w.handle)
+	}
+}
+
+// nullify resets the handle
+func (w *UserMessage) nullify() {
+	w.handle = 0
+	w.ownership = Borrowed
+}
+
+// Close explicitly destroys the handle (like C++ destructor, but manual)
+func (w *UserMessage) Close() {
+	w.Reset()
+}
+
+// Get returns the underlying handle
+func (w *UserMessage) Get() uintptr {
+	return w.handle
+}
+
+// Release releases ownership and returns the handle
+func (w *UserMessage) Release() uintptr {
+	if w.ownership == Owned {
+		w.cleanup.Stop()
+	}
+	handle := w.handle
+	w.nullify()
+	return handle
+}
+
+// Reset destroys and resets the handle
+func (w *UserMessage) Reset() {
+	if w.ownership == Owned {
+		w.cleanup.Stop()
+	}
+	w.destroy()
+	w.nullify()
+}
+
+// IsValid returns true if handle is not nil
+func (w *UserMessage) IsValid() bool {
+	return w.handle != 0
+}
+
+// Send - Sends a UserMessage to the specified recipients.
+func (w *UserMessage) Send() error {
+	if w.handle == 0 {
+		return UserMessageErrEmptyHandle
+	}
+	UserMessageSend(w.handle)
+	return nil
+}
+
+// GetMessageName - Gets the name of the message.
+//
+//	@return The name of the message as a string.
+func (w *UserMessage) GetMessageName() (string, error) {
+	if w.handle == 0 {
+		var zero string
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetMessageName(w.handle), nil
+}
+
+// GetMessageID - Gets the ID of the message.
+//
+//	@return The ID of the message.
+func (w *UserMessage) GetMessageID() (int16, error) {
+	if w.handle == 0 {
+		var zero int16
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetMessageID(w.handle), nil
+}
+
+// HasField - Checks if the message has a specific field.
+//
+//	@param fieldName: The name of the field to check.
+//	@return True if the field exists, false otherwise.
+func (w *UserMessage) HasField(fieldName string) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageHasField(w.handle, fieldName), nil
+}
+
+// GetProtobufMessage - Gets the protobuf message associated with the UserMessage.
+//
+//	@return A pointer to the protobuf message.
+func (w *UserMessage) GetProtobufMessage() (uintptr, error) {
+	if w.handle == 0 {
+		var zero uintptr
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetProtobufMessage(w.handle), nil
+}
+
+// GetSerializableMessage - Gets the serializable message associated with the UserMessage.
+//
+//	@return A pointer to the serializable message.
+func (w *UserMessage) GetSerializableMessage() (uintptr, error) {
+	if w.handle == 0 {
+		var zero uintptr
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetSerializableMessage(w.handle), nil
+}
+
+// FindMessageIdByName - Finds a message ID by its name.
+//
+//	@param messageName: The name of the message.
+//	@return The ID of the message, or 0 if the message was not found.
+func (w *UserMessage) FindMessageIdByName(messageName string) int16 {
+	return UserMessageFindMessageIdByName(messageName)
+}
+
+// GetRecipientMask - Gets the recipient mask for the UserMessage.
+//
+//	@return The recipient mask.
+func (w *UserMessage) GetRecipientMask() (uint64, error) {
+	if w.handle == 0 {
+		var zero uint64
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetRecipientMask(w.handle), nil
+}
+
+// AddRecipient - Adds a single recipient (player) to the UserMessage.
+//
+//	@param playerSlot: The slot index of the player to add as a recipient.
+func (w *UserMessage) AddRecipient(playerSlot int32) error {
+	if w.handle == 0 {
+		return UserMessageErrEmptyHandle
+	}
+	UserMessageAddRecipient(w.handle, playerSlot)
+	return nil
+}
+
+// AddAllPlayers - Adds all connected players as recipients to the UserMessage.
+func (w *UserMessage) AddAllPlayers() error {
+	if w.handle == 0 {
+		return UserMessageErrEmptyHandle
+	}
+	UserMessageAddAllPlayers(w.handle)
+	return nil
+}
+
+// SetRecipientMask - Sets the recipient mask for the UserMessage.
+//
+//	@param mask: The recipient mask to set.
+func (w *UserMessage) SetRecipientMask(mask uint64) error {
+	if w.handle == 0 {
+		return UserMessageErrEmptyHandle
+	}
+	UserMessageSetRecipientMask(w.handle, mask)
+	return nil
+}
+
+// GetMessage - Gets a nested message from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param message: A pointer to store the retrieved message.
+//	@return True if the message was successfully retrieved, false otherwise.
+func (w *UserMessage) GetMessage(fieldName string, message uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetMessage(w.handle, fieldName, message), nil
+}
+
+// GetRepeatedMessage - Gets a repeated nested message from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param message: A pointer to store the retrieved message.
+//	@return True if the message was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedMessage(fieldName string, index int32, message uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetRepeatedMessage(w.handle, fieldName, index, message), nil
+}
+
+// AddMessage - Adds a nested message to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param message: A pointer to the message to add.
+//	@return True if the message was successfully added, false otherwise.
+func (w *UserMessage) AddMessage(fieldName string, message uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageAddMessage(w.handle, fieldName, message), nil
+}
+
+// GetRepeatedFieldCount - Gets the count of repeated fields in a field of the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@return The count of repeated fields, or -1 if the field is not repeated or does not exist.
+func (w *UserMessage) GetRepeatedFieldCount(fieldName string) (int32, error) {
+	if w.handle == 0 {
+		var zero int32
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetRepeatedFieldCount(w.handle, fieldName), nil
+}
+
+// RemoveRepeatedFieldValue - Removes a value from a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the value to remove.
+//	@return True if the value was successfully removed, false otherwise.
+func (w *UserMessage) RemoveRepeatedFieldValue(fieldName string, index int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageRemoveRepeatedFieldValue(w.handle, fieldName, index), nil
+}
+
+// GetDebugString - Gets the debug string representation of the UserMessage.
+//
+//	@return The debug string as a string.
+func (w *UserMessage) GetDebugString() (string, error) {
+	if w.handle == 0 {
+		var zero string
+		return zero, UserMessageErrEmptyHandle
+	}
+	return UserMessageGetDebugString(w.handle), nil
+}
+
+// ReadEnum - Reads an enum value from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The integer representation of the enum value, or 0 if invalid.
+func (w *UserMessage) ReadEnum(fieldName string, index int32) (int32, error) {
+	if w.handle == 0 {
+		var zero int32
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadEnum(w.handle, fieldName, index), nil
+}
+
+// ReadInt32 - Reads a 32-bit integer from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The int32_t value read, or 0 if invalid.
+func (w *UserMessage) ReadInt32(fieldName string, index int32) (int32, error) {
+	if w.handle == 0 {
+		var zero int32
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadInt32(w.handle, fieldName, index), nil
+}
+
+// ReadInt64 - Reads a 64-bit integer from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The int64_t value read, or 0 if invalid.
+func (w *UserMessage) ReadInt64(fieldName string, index int32) (int64, error) {
+	if w.handle == 0 {
+		var zero int64
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadInt64(w.handle, fieldName, index), nil
+}
+
+// ReadUInt32 - Reads an unsigned 32-bit integer from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The uint32_t value read, or 0 if invalid.
+func (w *UserMessage) ReadUInt32(fieldName string, index int32) (uint32, error) {
+	if w.handle == 0 {
+		var zero uint32
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadUInt32(w.handle, fieldName, index), nil
+}
+
+// ReadUInt64 - Reads an unsigned 64-bit integer from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The uint64_t value read, or 0 if invalid.
+func (w *UserMessage) ReadUInt64(fieldName string, index int32) (uint64, error) {
+	if w.handle == 0 {
+		var zero uint64
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadUInt64(w.handle, fieldName, index), nil
+}
+
+// ReadFloat - Reads a floating-point value from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The float value read, or 0.0 if invalid.
+func (w *UserMessage) ReadFloat(fieldName string, index int32) (float32, error) {
+	if w.handle == 0 {
+		var zero float32
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadFloat(w.handle, fieldName, index), nil
+}
+
+// ReadDouble - Reads a double-precision floating-point value from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The double value read, or 0.0 if invalid.
+func (w *UserMessage) ReadDouble(fieldName string, index int32) (float64, error) {
+	if w.handle == 0 {
+		var zero float64
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadDouble(w.handle, fieldName, index), nil
+}
+
+// ReadBool - Reads a boolean value from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The boolean value read, or false if invalid.
+func (w *UserMessage) ReadBool(fieldName string, index int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadBool(w.handle, fieldName, index), nil
+}
+
+// ReadString - Reads a string from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The string value read, or an empty string if invalid.
+func (w *UserMessage) ReadString(fieldName string, index int32) (string, error) {
+	if w.handle == 0 {
+		var zero string
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadString(w.handle, fieldName, index), nil
+}
+
+// ReadColor - Reads a color value from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The color value read, or an empty value if invalid.
+func (w *UserMessage) ReadColor(fieldName string, index int32) (int32, error) {
+	if w.handle == 0 {
+		var zero int32
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadColor(w.handle, fieldName, index), nil
+}
+
+// ReadVector2 - Reads a 2D vector from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The 2D vector value read, or an empty value if invalid.
+func (w *UserMessage) ReadVector2(fieldName string, index int32) (plugify.Vector2, error) {
+	if w.handle == 0 {
+		var zero plugify.Vector2
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadVector2(w.handle, fieldName, index), nil
+}
+
+// ReadVector3 - Reads a 3D vector from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The 3D vector value read, or an empty value if invalid.
+func (w *UserMessage) ReadVector3(fieldName string, index int32) (plugify.Vector3, error) {
+	if w.handle == 0 {
+		var zero plugify.Vector3
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadVector3(w.handle, fieldName, index), nil
+}
+
+// ReadQAngle - Reads a QAngle (rotation vector) from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The QAngle value read, or an empty value if invalid.
+func (w *UserMessage) ReadQAngle(fieldName string, index int32) (plugify.Vector3, error) {
+	if w.handle == 0 {
+		var zero plugify.Vector3
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadQAngle(w.handle, fieldName, index), nil
+}
+
+// GetEnum - Gets a enum value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetEnum(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetEnum(w.handle, fieldName, out), nil
+}
+
+// SetEnum - Sets a enum value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetEnum(fieldName string, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetEnum(w.handle, fieldName, value), nil
+}
+
+// GetInt32 - Gets a 32-bit integer value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetInt32(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetInt32(w.handle, fieldName, out), nil
+}
+
+// SetInt32 - Sets a 32-bit integer value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetInt32(fieldName string, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetInt32(w.handle, fieldName, value), nil
+}
+
+// GetInt64 - Gets a 64-bit integer value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetInt64(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetInt64(w.handle, fieldName, out), nil
+}
+
+// SetInt64 - Sets a 64-bit integer value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetInt64(fieldName string, value int64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetInt64(w.handle, fieldName, value), nil
+}
+
+// GetUInt32 - Gets an unsigned 32-bit integer value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetUInt32(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetUInt32(w.handle, fieldName, out), nil
+}
+
+// SetUInt32 - Sets an unsigned 32-bit integer value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetUInt32(fieldName string, value uint32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetUInt32(w.handle, fieldName, value), nil
+}
+
+// GetUInt64 - Gets an unsigned 64-bit integer value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetUInt64(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetUInt64(w.handle, fieldName, out), nil
+}
+
+// SetUInt64 - Sets an unsigned 64-bit integer value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetUInt64(fieldName string, value uint64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetUInt64(w.handle, fieldName, value), nil
+}
+
+// GetBool - Gets a bool value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetBool(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetBool(w.handle, fieldName, out), nil
+}
+
+// SetBool - Sets a bool value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetBool(fieldName string, value bool) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetBool(w.handle, fieldName, value), nil
+}
+
+// GetFloat - Gets a float value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetFloat(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetFloat(w.handle, fieldName, out), nil
+}
+
+// SetFloat - Sets a float value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetFloat(fieldName string, value float32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetFloat(w.handle, fieldName, value), nil
+}
+
+// GetDouble - Gets a double value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetDouble(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetDouble(w.handle, fieldName, out), nil
+}
+
+// SetDouble - Sets a double value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetDouble(fieldName string, value float64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetDouble(w.handle, fieldName, value), nil
+}
+
+// GetString - Gets a string value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetString(fieldName string, out *string) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetString(w.handle, fieldName, out), nil
+}
+
+// SetString - Sets a string value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetString(fieldName string, value string) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetString(w.handle, fieldName, value), nil
+}
+
+// GetColor - Gets a color value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetColor(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetColor(w.handle, fieldName, out), nil
+}
+
+// SetColor - Sets a color value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetColor(fieldName string, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetColor(w.handle, fieldName, value), nil
+}
+
+// GetVector2 - Gets a Vector2 value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetVector2(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetVector2(w.handle, fieldName, out), nil
+}
+
+// SetVector2 - Sets a Vector2 value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetVector2(fieldName string, value plugify.Vector2) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetVector2(w.handle, fieldName, value), nil
+}
+
+// GetVector3 - Gets a Vector3 value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetVector3(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetVector3(w.handle, fieldName, out), nil
+}
+
+// SetVector3 - Sets a Vector3 value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetVector3(fieldName string, value plugify.Vector3) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetVector3(w.handle, fieldName, value), nil
+}
+
+// GetQAngle - Gets a QAngle value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetQAngle(fieldName string, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetQAngle(w.handle, fieldName, out), nil
+}
+
+// SetQAngle - Sets a QAngle value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetQAngle(fieldName string, value plugify.Vector3) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetQAngle(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedEnum - Gets a repeated enum value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedEnum(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedEnum(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedEnum - Sets a repeated enum value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedEnum(fieldName string, index int32, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedEnum(w.handle, fieldName, index, value), nil
+}
+
+// AddEnum - Adds a enum value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddEnum(fieldName string, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddEnum(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedInt32 - Gets a repeated int32_t value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedInt32(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedInt32(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedInt32 - Sets a repeated int32_t value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedInt32(fieldName string, index int32, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedInt32(w.handle, fieldName, index, value), nil
+}
+
+// AddInt32 - Adds a 32-bit integer value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddInt32(fieldName string, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddInt32(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedInt64 - Gets a repeated int64_t value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedInt64(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedInt64(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedInt64 - Sets a repeated int64_t value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedInt64(fieldName string, index int32, value int64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedInt64(w.handle, fieldName, index, value), nil
+}
+
+// AddInt64 - Adds a 64-bit integer value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddInt64(fieldName string, value int64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddInt64(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedUInt32 - Gets a repeated uint32_t value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedUInt32(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedUInt32(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedUInt32 - Sets a repeated uint32_t value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedUInt32(fieldName string, index int32, value uint32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedUInt32(w.handle, fieldName, index, value), nil
+}
+
+// AddUInt32 - Adds an unsigned 32-bit integer value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddUInt32(fieldName string, value uint32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddUInt32(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedUInt64 - Gets a repeated uint64_t value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedUInt64(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedUInt64(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedUInt64 - Sets a repeated uint64_t value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedUInt64(fieldName string, index int32, value uint64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedUInt64(w.handle, fieldName, index, value), nil
+}
+
+// AddUInt64 - Adds an unsigned 64-bit integer value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddUInt64(fieldName string, value uint64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddUInt64(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedBool - Gets a repeated bool value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedBool(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedBool(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedBool - Sets a repeated bool value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedBool(fieldName string, index int32, value bool) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedBool(w.handle, fieldName, index, value), nil
+}
+
+// AddBool - Adds a bool value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddBool(fieldName string, value bool) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddBool(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedFloat - Gets a repeated float value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedFloat(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedFloat(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedFloat - Sets a repeated float value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedFloat(fieldName string, index int32, value float32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedFloat(w.handle, fieldName, index, value), nil
+}
+
+// AddFloat - Adds a float value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddFloat(fieldName string, value float32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddFloat(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedDouble - Gets a repeated double value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output value.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedDouble(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedDouble(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedDouble - Sets a repeated double value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedDouble(fieldName string, index int32, value float64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedDouble(w.handle, fieldName, index, value), nil
+}
+
+// AddDouble - Adds a double value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddDouble(fieldName string, value float64) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddDouble(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedString - Gets a repeated string value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedString(fieldName string, index int32, out *string) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedString(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedString - Sets a repeated string value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedString(fieldName string, index int32, value string) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedString(w.handle, fieldName, index, value), nil
+}
+
+// AddString - Adds a string value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddString(fieldName string, value string) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddString(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedColor - Gets a repeated color value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output color.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedColor(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedColor(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedColor - Sets a repeated color value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedColor(fieldName string, index int32, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedColor(w.handle, fieldName, index, value), nil
+}
+
+// AddColor - Adds a color value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddColor(fieldName string, value int32) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddColor(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedVector2 - Gets a repeated Vector2 value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output vector2.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedVector2(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedVector2(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedVector2 - Sets a repeated Vector2 value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedVector2(fieldName string, index int32, value plugify.Vector2) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedVector2(w.handle, fieldName, index, value), nil
+}
+
+// AddVector2 - Adds a Vector2 value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddVector2(fieldName string, value plugify.Vector2) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddVector2(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedVector3 - Gets a repeated Vector3 value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output vector2.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedVector3(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedVector3(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedVector3 - Sets a repeated Vector3 value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedVector3(fieldName string, index int32, value plugify.Vector3) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedVector3(w.handle, fieldName, index, value), nil
+}
+
+// AddVector3 - Adds a Vector3 value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddVector3(fieldName string, value plugify.Vector3) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddVector3(w.handle, fieldName, value), nil
+}
+
+// GetRepeatedQAngle - Gets a repeated QAngle value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output vector2.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedQAngle(fieldName string, index int32, out uintptr) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedQAngle(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedQAngle - Sets a repeated QAngle value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedQAngle(fieldName string, index int32, value plugify.Vector3) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedQAngle(w.handle, fieldName, index, value), nil
+}
+
+// AddQAngle - Adds a QAngle value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddQAngle(fieldName string, value plugify.Vector3) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddQAngle(w.handle, fieldName, value), nil
 }

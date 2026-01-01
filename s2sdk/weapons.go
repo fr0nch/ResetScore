@@ -12,16 +12,20 @@ package s2sdk
 */
 import "C"
 import (
+	"errors"
 	"github.com/untrustedmodders/go-plugify"
 	"reflect"
+	"runtime"
 	"unsafe"
 )
 
+var _ = errors.New("")
 var _ = reflect.TypeOf(0)
+var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.Plugin.Loaded
 
-// Generated with https://github.com/untrustedmodders/plugify-module-golang/blob/main/generator/generator.py from s2sdk (group: weapons)
+// Generated from s2sdk (group: weapons)
 
 // GetWeaponVDataFromKey
 //
@@ -61,11 +65,11 @@ func GetWeaponVData(entityHandle int32) uintptr {
 
 // GetWeaponType
 //
-//	@brief Retrieves the weapon type of a given entity.
+//	@brief Retrieves the weapon model of a given entity.
 //
 //	@param entityHandle: The handle of the entity (weapon).
 //
-//	@return The type of the weapon, or WEAPONTYPE_UNKNOWN if the entity is invalid.
+//	@return The model of the weapon, or WEAPONTYPE_UNKNOWN if the entity is invalid.
 func GetWeaponType(entityHandle int32) CSWeaponType {
 	var __retVal CSWeaponType
 	__entityHandle := C.int32_t(entityHandle)
