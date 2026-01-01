@@ -259,14 +259,15 @@ func Kv1GetNextKey(kv uintptr) uintptr {
 //	@param defaultValue: The default color value to return if the key is not found
 //
 //	@return The color value as a 32-bit integer (RGBA)
-func Kv1GetColor(kv uintptr, keyName string, defaultValue int32) int32 {
-	var __retVal int32
+func Kv1GetColor(kv uintptr, keyName string, defaultValue plugify.Vector4) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__kv := C.uintptr_t(kv)
 	__keyName := plugify.ConstructString(keyName)
-	__defaultValue := C.int32_t(defaultValue)
+	__defaultValue := *(*C.Vector4)(unsafe.Pointer(&defaultValue))
 	plugify.Block{
 		Try: func() {
-			__retVal = int32(C.Kv1GetColor(__kv, (*C.String)(unsafe.Pointer(&__keyName)), __defaultValue))
+			__native := C.Kv1GetColor(__kv, (*C.String)(unsafe.Pointer(&__keyName)), &__defaultValue)
+			__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -283,13 +284,13 @@ func Kv1GetColor(kv uintptr, keyName string, defaultValue int32) int32 {
 //	@param kv: Pointer to the KeyValues object
 //	@param keyName: The name of the key to set the color for
 //	@param value: The color value as a 32-bit integer (RGBA)
-func Kv1SetColor(kv uintptr, keyName string, value int32) {
+func Kv1SetColor(kv uintptr, keyName string, value plugify.Vector4) {
 	__kv := C.uintptr_t(kv)
 	__keyName := plugify.ConstructString(keyName)
-	__value := C.int32_t(value)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
 	plugify.Block{
 		Try: func() {
-			C.Kv1SetColor(__kv, (*C.String)(unsafe.Pointer(&__keyName)), __value)
+			C.Kv1SetColor(__kv, (*C.String)(unsafe.Pointer(&__keyName)), &__value)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -804,9 +805,9 @@ func (w *KeyValues1) GetNextKey() (*KeyValues1, error) {
 //	@param keyName: The name of the key to retrieve the color from
 //	@param defaultValue: The default color value to return if the key is not found
 //	@return The color value as a 32-bit integer (RGBA)
-func (w *KeyValues1) GetColor(keyName string, defaultValue int32) (int32, error) {
+func (w *KeyValues1) GetColor(keyName string, defaultValue plugify.Vector4) (plugify.Vector4, error) {
 	if w.handle == 0 {
-		var zero int32
+		var zero plugify.Vector4
 		return zero, KeyValues1ErrEmptyHandle
 	}
 	return Kv1GetColor(w.handle, keyName, defaultValue), nil
@@ -816,7 +817,7 @@ func (w *KeyValues1) GetColor(keyName string, defaultValue int32) (int32, error)
 //
 //	@param keyName: The name of the key to set the color for
 //	@param value: The color value as a 32-bit integer (RGBA)
-func (w *KeyValues1) SetColor(keyName string, value int32) error {
+func (w *KeyValues1) SetColor(keyName string, value plugify.Vector4) error {
 	if w.handle == 0 {
 		return KeyValues1ErrEmptyHandle
 	}

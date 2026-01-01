@@ -70,15 +70,15 @@ package s2sdk
 #cgo noescape QueryClientConVar
 #cgo noescape AutoExecConfig
 #cgo noescape GetServerLanguage
+#cgo noescape GetAllConVars
 */
 import "C"
 import (
 	"errors"
+	"github.com/untrustedmodders/go-plugify"
 	"reflect"
 	"runtime"
 	"unsafe"
-
-	"github.com/untrustedmodders/go-plugify"
 )
 
 var _ = errors.New("")
@@ -466,19 +466,19 @@ func CreateConVarDouble(name string, defaultValue float64, description string, f
 //	@param max: The maximum color value if hasMax is true.
 //
 //	@return A handle to the created console variable data.
-func CreateConVarColor(name string, defaultValue int32, description string, flags ConVarFlag, hasMin bool, min int32, hasMax bool, max int32) uint64 {
+func CreateConVarColor(name string, defaultValue plugify.Vector4, description string, flags ConVarFlag, hasMin bool, min plugify.Vector4, hasMax bool, max plugify.Vector4) uint64 {
 	var __retVal uint64
 	__name := plugify.ConstructString(name)
-	__defaultValue := C.int32_t(defaultValue)
+	__defaultValue := *(*C.Vector4)(unsafe.Pointer(&defaultValue))
 	__description := plugify.ConstructString(description)
 	__flags := C.int64_t(flags)
 	__hasMin := C.bool(hasMin)
-	__min := C.int32_t(min)
+	__min := *(*C.Vector4)(unsafe.Pointer(&min))
 	__hasMax := C.bool(hasMax)
-	__max := C.int32_t(max)
+	__max := *(*C.Vector4)(unsafe.Pointer(&max))
 	plugify.Block{
 		Try: func() {
-			__retVal = uint64(C.CreateConVarColor((*C.String)(unsafe.Pointer(&__name)), __defaultValue, (*C.String)(unsafe.Pointer(&__description)), __flags, __hasMin, __min, __hasMax, __max))
+			__retVal = uint64(C.CreateConVarColor((*C.String)(unsafe.Pointer(&__name)), &__defaultValue, (*C.String)(unsafe.Pointer(&__description)), __flags, __hasMin, &__min, __hasMax, &__max))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -691,10 +691,10 @@ func FindConVar(name string) uint64 {
 
 // FindConVar2
 //
-//	@brief Searches for a console variable of a specific model.
+//	@brief Searches for a console variable of a specific type.
 //
 //	@param name: The name of the console variable to search for.
-//	@param type_: The model of the console variable to search for.
+//	@param type_: The type of the console variable to search for.
 //
 //	@return A handle to the console variable data if found; otherwise, nullptr.
 func FindConVar2(name string, type_ ConVarType) uint64 {
@@ -1078,10 +1078,11 @@ func GetConVarString(conVarHandle uint64) string {
 //	@param conVarHandle: The handle to the console variable data.
 //
 //	@return The current Color value of the console variable.
-func GetConVarColor(conVarHandle uint64) int32 {
-	var __retVal int32
+func GetConVarColor(conVarHandle uint64) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__conVarHandle := C.uint64_t(conVarHandle)
-	__retVal = int32(C.GetConVarColor(__conVarHandle))
+	__native := C.GetConVarColor(__conVarHandle)
+	__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 	return __retVal
 }
 
@@ -1369,12 +1370,12 @@ func SetConVarString(conVarHandle uint64, value string, replicate bool, notify b
 //	@param value: The value to set for the console variable.
 //	@param replicate: If set to true, the new convar value will be set on all clients. This will only work if the convar has the FCVAR_REPLICATED flag and actually exists on clients.
 //	@param notify: If set to true, clients will be notified that the convar has changed. This will only work if the convar has the FCVAR_NOTIFY flag.
-func SetConVarColor(conVarHandle uint64, value int32, replicate bool, notify bool) {
+func SetConVarColor(conVarHandle uint64, value plugify.Vector4, replicate bool, notify bool) {
 	__conVarHandle := C.uint64_t(conVarHandle)
-	__value := C.int32_t(value)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
 	__replicate := C.bool(replicate)
 	__notify := C.bool(notify)
-	C.SetConVarColor(__conVarHandle, __value, __replicate, __notify)
+	C.SetConVarColor(__conVarHandle, &__value, __replicate, __notify)
 }
 
 // SetConVarVector2
@@ -1615,6 +1616,30 @@ func GetServerLanguage() string {
 		Finally: func() {
 			// Perform cleanup.
 			plugify.DestroyString(&__retVal_native)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetAllConVars
+//
+//	@brief Returns all console variables registered by this plugin
+//
+//
+//	@return The vector of ConVar names.
+func GetAllConVars() []string {
+	var __retVal []string
+	var __retVal_native plugify.PlgVector
+	plugify.Block{
+		Try: func() {
+			__native := C.GetAllConVars()
+			__retVal_native = *(*plugify.PlgVector)(unsafe.Pointer(&__native))
+			// Unmarshal - Convert native data to managed data.
+			__retVal = plugify.GetVectorDataString(&__retVal_native)
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyVectorString(&__retVal_native)
 		},
 	}.Do()
 	return __retVal
@@ -1882,10 +1907,10 @@ func (w *ConVar) Find(name string) *ConVar {
 	return NewConVar(FindConVar(name))
 }
 
-// Find2 - Searches for a console variable of a specific model.
+// Find2 - Searches for a console variable of a specific type.
 //
 //	@param name: The name of the console variable to search for.
-//	@param type_: The model of the console variable to search for.
+//	@param type_: The type of the console variable to search for.
 //	@return A handle to the console variable data if found; otherwise, nullptr.
 func (w *ConVar) Find2(name string, type_ ConVarType) *ConVar {
 	return NewConVar(FindConVar2(name, type_))
@@ -2128,9 +2153,9 @@ func (w *ConVar) GetString() (string, error) {
 // GetColor - Retrieves the current value of a Color console variable.
 //
 //	@return The current Color value of the console variable.
-func (w *ConVar) GetColor() (int32, error) {
+func (w *ConVar) GetColor() (plugify.Vector4, error) {
 	if w.handle == 0 {
-		var zero int32
+		var zero plugify.Vector4
 		return zero, ConVarErrEmptyHandle
 	}
 	return GetConVarColor(w.handle), nil
@@ -2341,7 +2366,7 @@ func (w *ConVar) SetString(value string, replicate bool, notify bool) error {
 //	@param value: The value to set for the console variable.
 //	@param replicate: If set to true, the new convar value will be set on all clients. This will only work if the convar has the FCVAR_REPLICATED flag and actually exists on clients.
 //	@param notify: If set to true, clients will be notified that the convar has changed. This will only work if the convar has the FCVAR_NOTIFY flag.
-func (w *ConVar) SetColor(value int32, replicate bool, notify bool) error {
+func (w *ConVar) SetColor(value plugify.Vector4, replicate bool, notify bool) error {
 	if w.handle == 0 {
 		return ConVarErrEmptyHandle
 	}

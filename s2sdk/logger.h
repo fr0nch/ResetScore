@@ -2,10 +2,10 @@
 
 #include "shared.h"
 
-extern int32_t (*__s2sdk_RegisterLoggingChannel)(String*, int32_t, int32_t, int32_t);
+extern int32_t (*__s2sdk_RegisterLoggingChannel)(String*, int32_t, int32_t, Vector4*);
 
-static int32_t RegisterLoggingChannel(String* name, int32_t iFlags, int32_t verbosity, int32_t color) {
-	return __s2sdk_RegisterLoggingChannel(name, iFlags, verbosity, color);
+static int32_t RegisterLoggingChannel(String* name, int32_t flags, int32_t verbosity, Vector4* color) {
+	return __s2sdk_RegisterLoggingChannel(name, flags, verbosity, color);
 }
 
 extern void (*__s2sdk_AddLoggerTagToChannel)(int32_t, String*);
@@ -56,15 +56,15 @@ static void SetLoggerChannelVerbosityByTag(int32_t channelID, String* tag, int32
 	__s2sdk_SetLoggerChannelVerbosityByTag(channelID, tag, verbosity);
 }
 
-extern int32_t (*__s2sdk_GetLoggerChannelColor)(int32_t);
+extern Vector4 (*__s2sdk_GetLoggerChannelColor)(int32_t);
 
-static int32_t GetLoggerChannelColor(int32_t channelID) {
+static Vector4 GetLoggerChannelColor(int32_t channelID) {
 	return __s2sdk_GetLoggerChannelColor(channelID);
 }
 
-extern void (*__s2sdk_SetLoggerChannelColor)(int32_t, int32_t);
+extern void (*__s2sdk_SetLoggerChannelColor)(int32_t, Vector4*);
 
-static void SetLoggerChannelColor(int32_t channelID, int32_t color) {
+static void SetLoggerChannelColor(int32_t channelID, Vector4* color) {
 	__s2sdk_SetLoggerChannelColor(channelID, color);
 }
 
@@ -86,9 +86,9 @@ static int32_t Log(int32_t channelID, int32_t severity, String* message) {
 	return __s2sdk_Log(channelID, severity, message);
 }
 
-extern int32_t (*__s2sdk_LogColored)(int32_t, int32_t, int32_t, String*);
+extern int32_t (*__s2sdk_LogColored)(int32_t, int32_t, Vector4*, String*);
 
-static int32_t LogColored(int32_t channelID, int32_t severity, int32_t color, String* message) {
+static int32_t LogColored(int32_t channelID, int32_t severity, Vector4* color, String* message) {
 	return __s2sdk_LogColored(channelID, severity, color, message);
 }
 
@@ -98,9 +98,9 @@ static int32_t LogFull(int32_t channelID, int32_t severity, String* file, int32_
 	return __s2sdk_LogFull(channelID, severity, file, line, function, message);
 }
 
-extern int32_t (*__s2sdk_LogFullColored)(int32_t, int32_t, String*, int32_t, String*, int32_t, String*);
+extern int32_t (*__s2sdk_LogFullColored)(int32_t, int32_t, String*, int32_t, String*, Vector4*, String*);
 
-static int32_t LogFullColored(int32_t channelID, int32_t severity, String* file, int32_t line, String* function, int32_t color, String* message) {
+static int32_t LogFullColored(int32_t channelID, int32_t severity, String* file, int32_t line, String* function, Vector4* color, String* message) {
 	return __s2sdk_LogFullColored(channelID, severity, file, line, function, color, message);
 }
 

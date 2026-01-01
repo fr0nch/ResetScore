@@ -11,6 +11,8 @@ package s2sdk
 #cgo noescape ServerCommandEx
 #cgo noescape ClientCommand
 #cgo noescape FakeClientCommand
+#cgo noescape GetAllConCommands
+#cgo noescape GetAllCommands
 */
 import "C"
 import (
@@ -252,4 +254,54 @@ func FakeClientCommand(playerSlot int32, command string) {
 			plugify.DestroyString(&__command)
 		},
 	}.Do()
+}
+
+// GetAllConCommands
+//
+//	@brief  Returns the names of all registered console commands and cvars.
+//
+//	@param flags: Additional flags for the console variable.
+//
+//	@return The vector of command/cvar names.
+func GetAllConCommands(flags ConVarFlag) []string {
+	var __retVal []string
+	var __retVal_native plugify.PlgVector
+	__flags := C.int64_t(flags)
+	plugify.Block{
+		Try: func() {
+			__native := C.GetAllConCommands(__flags)
+			__retVal_native = *(*plugify.PlgVector)(unsafe.Pointer(&__native))
+			// Unmarshal - Convert native data to managed data.
+			__retVal = plugify.GetVectorDataString(&__retVal_native)
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyVectorString(&__retVal_native)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetAllCommands
+//
+//	@brief Returns all console commands registered by this plugin.
+//
+//
+//	@return The vector of ConCommand names.
+func GetAllCommands() []string {
+	var __retVal []string
+	var __retVal_native plugify.PlgVector
+	plugify.Block{
+		Try: func() {
+			__native := C.GetAllCommands()
+			__retVal_native = *(*plugify.PlgVector)(unsafe.Pointer(&__native))
+			// Unmarshal - Convert native data to managed data.
+			__retVal = plugify.GetVectorDataString(&__retVal_native)
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyVectorString(&__retVal_native)
+		},
+	}.Do()
+	return __retVal
 }

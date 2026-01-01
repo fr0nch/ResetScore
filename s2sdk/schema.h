@@ -50,6 +50,18 @@ static void SetEntDataFloat2(uintptr_t entity, int32_t offset, double value, int
 	__s2sdk_SetEntDataFloat2(entity, offset, value, size, changeState, chainOffset);
 }
 
+extern Vector4 (*__s2sdk_GetEntDataColor2)(uintptr_t, int32_t);
+
+static Vector4 GetEntDataColor2(uintptr_t entity, int32_t offset) {
+	return __s2sdk_GetEntDataColor2(entity, offset);
+}
+
+extern void (*__s2sdk_SetEntDataColor2)(uintptr_t, int32_t, Vector4*, bool, int32_t);
+
+static void SetEntDataColor2(uintptr_t entity, int32_t offset, Vector4* value, bool changeState, int32_t chainOffset) {
+	__s2sdk_SetEntDataColor2(entity, offset, value, changeState, chainOffset);
+}
+
 extern String (*__s2sdk_GetEntDataString2)(uintptr_t, int32_t);
 
 static String GetEntDataString2(uintptr_t entity, int32_t offset) {
@@ -114,6 +126,18 @@ extern void (*__s2sdk_SetEntDataFloat)(int32_t, int32_t, double, int32_t, bool, 
 
 static void SetEntDataFloat(int32_t entityHandle, int32_t offset, double value, int32_t size, bool changeState, int32_t chainOffset) {
 	__s2sdk_SetEntDataFloat(entityHandle, offset, value, size, changeState, chainOffset);
+}
+
+extern Vector4 (*__s2sdk_GetEntDataColor)(int32_t, int32_t);
+
+static Vector4 GetEntDataColor(int32_t entityHandle, int32_t offset) {
+	return __s2sdk_GetEntDataColor(entityHandle, offset);
+}
+
+extern void (*__s2sdk_SetEntDataColor)(int32_t, int32_t, Vector4*, bool, int32_t);
+
+static void SetEntDataColor(int32_t entityHandle, int32_t offset, Vector4* value, bool changeState, int32_t chainOffset) {
+	__s2sdk_SetEntDataColor(entityHandle, offset, value, changeState, chainOffset);
 }
 
 extern String (*__s2sdk_GetEntDataString)(int32_t, int32_t);
@@ -186,6 +210,18 @@ extern void (*__s2sdk_SetEntSchemaFloat2)(uintptr_t, String*, String*, double, b
 
 static void SetEntSchemaFloat2(uintptr_t entity, String* className, String* memberName, double value, bool changeState, int32_t element) {
 	__s2sdk_SetEntSchemaFloat2(entity, className, memberName, value, changeState, element);
+}
+
+extern Vector4 (*__s2sdk_GetEntSchemaColor2)(uintptr_t, String*, String*, int32_t);
+
+static Vector4 GetEntSchemaColor2(uintptr_t entity, String* className, String* memberName, int32_t element) {
+	return __s2sdk_GetEntSchemaColor2(entity, className, memberName, element);
+}
+
+extern void (*__s2sdk_SetEntSchemaColor2)(uintptr_t, String*, String*, Vector4*, bool, int32_t);
+
+static void SetEntSchemaColor2(uintptr_t entity, String* className, String* memberName, Vector4* value, bool changeState, int32_t element) {
+	__s2sdk_SetEntSchemaColor2(entity, className, memberName, value, changeState, element);
 }
 
 extern String (*__s2sdk_GetEntSchemaString2)(uintptr_t, String*, String*, int32_t);
@@ -282,6 +318,18 @@ extern void (*__s2sdk_SetEntSchemaFloat)(int32_t, String*, String*, double, bool
 
 static void SetEntSchemaFloat(int32_t entityHandle, String* className, String* memberName, double value, bool changeState, int32_t element) {
 	__s2sdk_SetEntSchemaFloat(entityHandle, className, memberName, value, changeState, element);
+}
+
+extern Vector4 (*__s2sdk_GetEntSchemaColor)(int32_t, String*, String*, int32_t);
+
+static Vector4 GetEntSchemaColor(int32_t entityHandle, String* className, String* memberName, int32_t element) {
+	return __s2sdk_GetEntSchemaColor(entityHandle, className, memberName, element);
+}
+
+extern void (*__s2sdk_SetEntSchemaColor)(int32_t, String*, String*, Vector4*, bool, int32_t);
+
+static void SetEntSchemaColor(int32_t entityHandle, String* className, String* memberName, Vector4* value, bool changeState, int32_t element) {
+	__s2sdk_SetEntSchemaColor(entityHandle, className, memberName, value, changeState, element);
 }
 
 extern String (*__s2sdk_GetEntSchemaString)(int32_t, String*, String*, int32_t);
