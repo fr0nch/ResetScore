@@ -224,15 +224,15 @@ static void SetEntityFlags(int32_t entityHandle, int32_t flags) {
 	__s2sdk_SetEntityFlags(entityHandle, flags);
 }
 
-extern int32_t (*__s2sdk_GetEntityRenderColor)(int32_t);
+extern Vector4 (*__s2sdk_GetEntityRenderColor)(int32_t);
 
-static int32_t GetEntityRenderColor(int32_t entityHandle) {
+static Vector4 GetEntityRenderColor(int32_t entityHandle) {
 	return __s2sdk_GetEntityRenderColor(entityHandle);
 }
 
-extern void (*__s2sdk_SetEntityRenderColor)(int32_t, int32_t);
+extern void (*__s2sdk_SetEntityRenderColor)(int32_t, Vector4*);
 
-static void SetEntityRenderColor(int32_t entityHandle, int32_t color) {
+static void SetEntityRenderColor(int32_t entityHandle, Vector4* color) {
 	__s2sdk_SetEntityRenderColor(entityHandle, color);
 }
 
@@ -326,10 +326,16 @@ static int32_t GetEntityParent(int32_t entityHandle) {
 	return __s2sdk_GetEntityParent(entityHandle);
 }
 
-extern void (*__s2sdk_SetEntityParent)(int32_t, int32_t, String*);
+extern void (*__s2sdk_SetEntityParent)(int32_t, int32_t);
 
-static void SetEntityParent(int32_t entityHandle, int32_t parentHandle, String* attachmentName) {
-	__s2sdk_SetEntityParent(entityHandle, parentHandle, attachmentName);
+static void SetEntityParent(int32_t entityHandle, int32_t parentHandle) {
+	__s2sdk_SetEntityParent(entityHandle, parentHandle);
+}
+
+extern void (*__s2sdk_SetEntityParentAttachment)(int32_t, int32_t, String*);
+
+static void SetEntityParentAttachment(int32_t entityHandle, int32_t parentHandle, String* attachmentName) {
+	__s2sdk_SetEntityParentAttachment(entityHandle, parentHandle, attachmentName);
 }
 
 extern Vector3 (*__s2sdk_GetEntityAbsOrigin)(int32_t);

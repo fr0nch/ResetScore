@@ -56,3 +56,15 @@ static void FakeClientCommand(int32_t playerSlot, String* command) {
 	__s2sdk_FakeClientCommand(playerSlot, command);
 }
 
+extern Vector (*__s2sdk_GetAllConCommands)(int64_t);
+
+static Vector GetAllConCommands(int64_t flags) {
+	return __s2sdk_GetAllConCommands(flags);
+}
+
+extern Vector (*__s2sdk_GetAllCommands)();
+
+static Vector GetAllCommands() {
+	return __s2sdk_GetAllCommands();
+}
+

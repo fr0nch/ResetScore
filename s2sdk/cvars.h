@@ -62,9 +62,9 @@ static uint64_t CreateConVarDouble(String* name, double defaultValue, String* de
 	return __s2sdk_CreateConVarDouble(name, defaultValue, description, flags, hasMin, min, hasMax, max);
 }
 
-extern uint64_t (*__s2sdk_CreateConVarColor)(String*, int32_t, String*, int64_t, bool, int32_t, bool, int32_t);
+extern uint64_t (*__s2sdk_CreateConVarColor)(String*, Vector4*, String*, int64_t, bool, Vector4*, bool, Vector4*);
 
-static uint64_t CreateConVarColor(String* name, int32_t defaultValue, String* description, int64_t flags, bool hasMin, int32_t min, bool hasMax, int32_t max) {
+static uint64_t CreateConVarColor(String* name, Vector4* defaultValue, String* description, int64_t flags, bool hasMin, Vector4* min, bool hasMax, Vector4* max) {
 	return __s2sdk_CreateConVarColor(name, defaultValue, description, flags, hasMin, min, hasMax, max);
 }
 
@@ -236,9 +236,9 @@ static String GetConVarString(uint64_t conVarHandle) {
 	return __s2sdk_GetConVarString(conVarHandle);
 }
 
-extern int32_t (*__s2sdk_GetConVarColor)(uint64_t);
+extern Vector4 (*__s2sdk_GetConVarColor)(uint64_t);
 
-static int32_t GetConVarColor(uint64_t conVarHandle) {
+static Vector4 GetConVarColor(uint64_t conVarHandle) {
 	return __s2sdk_GetConVarColor(conVarHandle);
 }
 
@@ -338,9 +338,9 @@ static void SetConVarString(uint64_t conVarHandle, String* value, bool replicate
 	__s2sdk_SetConVarString(conVarHandle, value, replicate, notify);
 }
 
-extern void (*__s2sdk_SetConVarColor)(uint64_t, int32_t, bool, bool);
+extern void (*__s2sdk_SetConVarColor)(uint64_t, Vector4*, bool, bool);
 
-static void SetConVarColor(uint64_t conVarHandle, int32_t value, bool replicate, bool notify) {
+static void SetConVarColor(uint64_t conVarHandle, Vector4* value, bool replicate, bool notify) {
 	__s2sdk_SetConVarColor(conVarHandle, value, replicate, notify);
 }
 
@@ -408,5 +408,11 @@ extern String (*__s2sdk_GetServerLanguage)();
 
 static String GetServerLanguage() {
 	return __s2sdk_GetServerLanguage();
+}
+
+extern Vector (*__s2sdk_GetAllConVars)();
+
+static Vector GetAllConVars() {
+	return __s2sdk_GetAllConVars();
 }
 

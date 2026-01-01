@@ -37,6 +37,7 @@ package s2sdk
 #cgo noescape PbReadColor
 #cgo noescape PbReadVector2
 #cgo noescape PbReadVector3
+#cgo noescape PbReadVector4
 #cgo noescape PbReadQAngle
 #cgo noescape PbGetEnum
 #cgo noescape PbSetEnum
@@ -62,6 +63,8 @@ package s2sdk
 #cgo noescape PbSetVector2
 #cgo noescape PbGetVector3
 #cgo noescape PbSetVector3
+#cgo noescape PbGetVector4
+#cgo noescape PbSetVector4
 #cgo noescape PbGetQAngle
 #cgo noescape PbSetQAngle
 #cgo noescape PbGetRepeatedEnum
@@ -100,6 +103,9 @@ package s2sdk
 #cgo noescape PbGetRepeatedVector3
 #cgo noescape PbSetRepeatedVector3
 #cgo noescape PbAddVector3
+#cgo noescape PbGetRepeatedVector4
+#cgo noescape PbSetRepeatedVector4
+#cgo noescape PbAddVector4
 #cgo noescape PbGetRepeatedQAngle
 #cgo noescape PbSetRepeatedQAngle
 #cgo noescape PbAddQAngle
@@ -107,11 +113,10 @@ package s2sdk
 import "C"
 import (
 	"errors"
+	"github.com/untrustedmodders/go-plugify"
 	"reflect"
 	"runtime"
 	"unsafe"
-
-	"github.com/untrustedmodders/go-plugify"
 )
 
 var _ = errors.New("")
@@ -403,14 +408,16 @@ func UserMessageSetRecipientMask(userMessage uintptr, mask uint64) {
 //	@param message: A pointer to store the retrieved message.
 //
 //	@return True if the message was successfully retrieved, false otherwise.
-func UserMessageGetMessage(userMessage uintptr, fieldName string, message uintptr) bool {
+func UserMessageGetMessage(userMessage uintptr, fieldName string, message *uintptr) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__message := C.uintptr_t(message)
+	__message := C.uintptr_t(*message)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.UserMessageGetMessage(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __message))
+			__retVal = bool(C.UserMessageGetMessage(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__message))
+			// Unmarshal - Convert native data to managed data.
+			*message = uintptr(__message)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -430,15 +437,17 @@ func UserMessageGetMessage(userMessage uintptr, fieldName string, message uintpt
 //	@param message: A pointer to store the retrieved message.
 //
 //	@return True if the message was successfully retrieved, false otherwise.
-func UserMessageGetRepeatedMessage(userMessage uintptr, fieldName string, index int32, message uintptr) bool {
+func UserMessageGetRepeatedMessage(userMessage uintptr, fieldName string, index int32, message *uintptr) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__message := C.uintptr_t(message)
+	__message := C.uintptr_t(*message)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.UserMessageGetRepeatedMessage(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __message))
+			__retVal = bool(C.UserMessageGetRepeatedMessage(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__message))
+			// Unmarshal - Convert native data to managed data.
+			*message = uintptr(__message)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -798,14 +807,15 @@ func PbReadString(userMessage uintptr, fieldName string, index int32) string {
 //	@param index: Index of the repeated field (use -1 for non-repeated fields).
 //
 //	@return The color value read, or an empty value if invalid.
-func PbReadColor(userMessage uintptr, fieldName string, index int32) int32 {
-	var __retVal int32
+func PbReadColor(userMessage uintptr, fieldName string, index int32) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
 	plugify.Block{
 		Try: func() {
-			__retVal = int32(C.PbReadColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index))
+			__native := C.PbReadColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index)
+			__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -869,6 +879,33 @@ func PbReadVector3(userMessage uintptr, fieldName string, index int32) plugify.V
 	return __retVal
 }
 
+// PbReadVector4
+//
+//	@brief Reads a 4D vector from a UserMessage.
+//
+//	@param userMessage: Pointer to the UserMessage object.
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//
+//	@return The 4D vector value read, or an empty value if invalid.
+func PbReadVector4(userMessage uintptr, fieldName string, index int32) plugify.Vector4 {
+	var __retVal plugify.Vector4
+	__userMessage := C.uintptr_t(userMessage)
+	__fieldName := plugify.ConstructString(fieldName)
+	__index := C.int32_t(index)
+	plugify.Block{
+		Try: func() {
+			__native := C.PbReadVector4(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index)
+			__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__fieldName)
+		},
+	}.Do()
+	return __retVal
+}
+
 // PbReadQAngle
 //
 //	@brief Reads a QAngle (rotation vector) from a UserMessage.
@@ -905,14 +942,16 @@ func PbReadQAngle(userMessage uintptr, fieldName string, index int32) plugify.Ve
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetEnum(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetEnum(userMessage uintptr, fieldName string, out *int32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.int32_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetEnum(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetEnum(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = int32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -957,14 +996,16 @@ func PbSetEnum(userMessage uintptr, fieldName string, value int32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetInt32(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetInt32(userMessage uintptr, fieldName string, out *int32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.int32_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = int32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1009,14 +1050,16 @@ func PbSetInt32(userMessage uintptr, fieldName string, value int32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetInt64(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetInt64(userMessage uintptr, fieldName string, out *int64) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.int64_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = int64(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1061,14 +1104,16 @@ func PbSetInt64(userMessage uintptr, fieldName string, value int64) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetUInt32(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetUInt32(userMessage uintptr, fieldName string, out *uint32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.uint32_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetUInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetUInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = uint32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1113,14 +1158,16 @@ func PbSetUInt32(userMessage uintptr, fieldName string, value uint32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetUInt64(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetUInt64(userMessage uintptr, fieldName string, out *uint64) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.uint64_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetUInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetUInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = uint64(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1165,14 +1212,16 @@ func PbSetUInt64(userMessage uintptr, fieldName string, value uint64) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetBool(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetBool(userMessage uintptr, fieldName string, out *bool) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.bool(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetBool(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetBool(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = bool(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1217,14 +1266,16 @@ func PbSetBool(userMessage uintptr, fieldName string, value bool) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetFloat(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetFloat(userMessage uintptr, fieldName string, out *float32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.float(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetFloat(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetFloat(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = float32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1269,14 +1320,16 @@ func PbSetFloat(userMessage uintptr, fieldName string, value float32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetDouble(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetDouble(userMessage uintptr, fieldName string, out *float64) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := C.double(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetDouble(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetDouble(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = float64(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1377,14 +1430,16 @@ func PbSetString(userMessage uintptr, fieldName string, value string) bool {
 //	@param out: The output string.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetColor(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetColor(userMessage uintptr, fieldName string, out *plugify.Vector4) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector4)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector4)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1403,14 +1458,14 @@ func PbGetColor(userMessage uintptr, fieldName string, out uintptr) bool {
 //	@param value: The value to set.
 //
 //	@return True if the field was successfully set, false otherwise.
-func PbSetColor(userMessage uintptr, fieldName string, value int32) bool {
+func PbSetColor(userMessage uintptr, fieldName string, value plugify.Vector4) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__value := C.int32_t(value)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbSetColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __value))
+			__retVal = bool(C.PbSetColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__value))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1429,14 +1484,16 @@ func PbSetColor(userMessage uintptr, fieldName string, value int32) bool {
 //	@param out: The output string.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetVector2(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetVector2(userMessage uintptr, fieldName string, out *plugify.Vector2) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector2)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetVector2(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetVector2(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector2)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1481,14 +1538,16 @@ func PbSetVector2(userMessage uintptr, fieldName string, value plugify.Vector2) 
 //	@param out: The output string.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetVector3(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetVector3(userMessage uintptr, fieldName string, out *plugify.Vector3) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector3)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetVector3(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetVector3(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector3)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1524,6 +1583,60 @@ func PbSetVector3(userMessage uintptr, fieldName string, value plugify.Vector3) 
 	return __retVal
 }
 
+// PbGetVector4
+//
+//	@brief Gets a Vector4 value from a field in the UserMessage.
+//
+//	@param userMessage: The UserMessage instance.
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//
+//	@return True if the field was successfully retrieved, false otherwise.
+func PbGetVector4(userMessage uintptr, fieldName string, out *plugify.Vector4) bool {
+	var __retVal bool
+	__userMessage := C.uintptr_t(userMessage)
+	__fieldName := plugify.ConstructString(fieldName)
+	__out := *(*C.Vector4)(unsafe.Pointer(out))
+	plugify.Block{
+		Try: func() {
+			__retVal = bool(C.PbGetVector4(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector4)(unsafe.Pointer(&__out))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__fieldName)
+		},
+	}.Do()
+	return __retVal
+}
+
+// PbSetVector4
+//
+//	@brief Sets a Vector3 value for a field in the UserMessage.
+//
+//	@param userMessage: The UserMessage instance.
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//
+//	@return True if the field was successfully set, false otherwise.
+func PbSetVector4(userMessage uintptr, fieldName string, value plugify.Vector4) bool {
+	var __retVal bool
+	__userMessage := C.uintptr_t(userMessage)
+	__fieldName := plugify.ConstructString(fieldName)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
+	plugify.Block{
+		Try: func() {
+			__retVal = bool(C.PbSetVector4(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__value))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__fieldName)
+		},
+	}.Do()
+	return __retVal
+}
+
 // PbGetQAngle
 //
 //	@brief Gets a QAngle value from a field in the UserMessage.
@@ -1533,14 +1646,16 @@ func PbSetVector3(userMessage uintptr, fieldName string, value plugify.Vector3) 
 //	@param out: The output string.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetQAngle(userMessage uintptr, fieldName string, out uintptr) bool {
+func PbGetQAngle(userMessage uintptr, fieldName string, out *plugify.Vector3) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector3)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetQAngle(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __out))
+			__retVal = bool(C.PbGetQAngle(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector3)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1586,15 +1701,17 @@ func PbSetQAngle(userMessage uintptr, fieldName string, value plugify.Vector3) b
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedEnum(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedEnum(userMessage uintptr, fieldName string, index int32, out *int32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.int32_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedEnum(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedEnum(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = int32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1668,15 +1785,17 @@ func PbAddEnum(userMessage uintptr, fieldName string, value int32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedInt32(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedInt32(userMessage uintptr, fieldName string, index int32, out *int32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.int32_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = int32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1750,15 +1869,17 @@ func PbAddInt32(userMessage uintptr, fieldName string, value int32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedInt64(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedInt64(userMessage uintptr, fieldName string, index int32, out *int64) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.int64_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = int64(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1832,15 +1953,17 @@ func PbAddInt64(userMessage uintptr, fieldName string, value int64) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedUInt32(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedUInt32(userMessage uintptr, fieldName string, index int32, out *uint32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.uint32_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedUInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedUInt32(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = uint32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1914,15 +2037,17 @@ func PbAddUInt32(userMessage uintptr, fieldName string, value uint32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedUInt64(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedUInt64(userMessage uintptr, fieldName string, index int32, out *uint64) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.uint64_t(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedUInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedUInt64(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = uint64(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1996,15 +2121,17 @@ func PbAddUInt64(userMessage uintptr, fieldName string, value uint64) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedBool(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedBool(userMessage uintptr, fieldName string, index int32, out *bool) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.bool(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedBool(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedBool(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = bool(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2078,15 +2205,17 @@ func PbAddBool(userMessage uintptr, fieldName string, value bool) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedFloat(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedFloat(userMessage uintptr, fieldName string, index int32, out *float32) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.float(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedFloat(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedFloat(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = float32(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2160,15 +2289,17 @@ func PbAddFloat(userMessage uintptr, fieldName string, value float32) bool {
 //	@param out: The output value.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedDouble(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedDouble(userMessage uintptr, fieldName string, index int32, out *float64) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := C.double(*out)
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedDouble(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedDouble(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = float64(__out)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2329,15 +2460,17 @@ func PbAddString(userMessage uintptr, fieldName string, value string) bool {
 //	@param out: The output color.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedColor(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedColor(userMessage uintptr, fieldName string, index int32, out *plugify.Vector4) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector4)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector4)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2357,15 +2490,15 @@ func PbGetRepeatedColor(userMessage uintptr, fieldName string, index int32, out 
 //	@param value: The value to set.
 //
 //	@return True if the field was successfully set, false otherwise.
-func PbSetRepeatedColor(userMessage uintptr, fieldName string, index int32, value int32) bool {
+func PbSetRepeatedColor(userMessage uintptr, fieldName string, index int32, value plugify.Vector4) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__value := C.int32_t(value)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbSetRepeatedColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __value))
+			__retVal = bool(C.PbSetRepeatedColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__value))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2384,14 +2517,14 @@ func PbSetRepeatedColor(userMessage uintptr, fieldName string, index int32, valu
 //	@param value: The value to add.
 //
 //	@return True if the value was successfully added, false otherwise.
-func PbAddColor(userMessage uintptr, fieldName string, value int32) bool {
+func PbAddColor(userMessage uintptr, fieldName string, value plugify.Vector4) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
-	__value := C.int32_t(value)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbAddColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __value))
+			__retVal = bool(C.PbAddColor(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__value))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2408,18 +2541,20 @@ func PbAddColor(userMessage uintptr, fieldName string, value int32) bool {
 //	@param userMessage: The UserMessage instance.
 //	@param fieldName: The name of the field.
 //	@param index: The index of the repeated field.
-//	@param out: The output vector2.
+//	@param out: The output vector.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedVector2(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedVector2(userMessage uintptr, fieldName string, index int32, out *plugify.Vector2) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector2)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedVector2(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedVector2(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector2)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2490,18 +2625,20 @@ func PbAddVector2(userMessage uintptr, fieldName string, value plugify.Vector2) 
 //	@param userMessage: The UserMessage instance.
 //	@param fieldName: The name of the field.
 //	@param index: The index of the repeated field.
-//	@param out: The output vector2.
+//	@param out: The output vector.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedVector3(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedVector3(userMessage uintptr, fieldName string, index int32, out *plugify.Vector3) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector3)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedVector3(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedVector3(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector3)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2565,6 +2702,90 @@ func PbAddVector3(userMessage uintptr, fieldName string, value plugify.Vector3) 
 	return __retVal
 }
 
+// PbGetRepeatedVector4
+//
+//	@brief Gets a repeated Vector4 value from a field in the UserMessage.
+//
+//	@param userMessage: The UserMessage instance.
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output vector.
+//
+//	@return True if the field was successfully retrieved, false otherwise.
+func PbGetRepeatedVector4(userMessage uintptr, fieldName string, index int32, out *plugify.Vector4) bool {
+	var __retVal bool
+	__userMessage := C.uintptr_t(userMessage)
+	__fieldName := plugify.ConstructString(fieldName)
+	__index := C.int32_t(index)
+	__out := *(*C.Vector4)(unsafe.Pointer(out))
+	plugify.Block{
+		Try: func() {
+			__retVal = bool(C.PbGetRepeatedVector4(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector4)(unsafe.Pointer(&__out))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__fieldName)
+		},
+	}.Do()
+	return __retVal
+}
+
+// PbSetRepeatedVector4
+//
+//	@brief Sets a repeated Vector4 value for a field in the UserMessage.
+//
+//	@param userMessage: The UserMessage instance.
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//
+//	@return True if the field was successfully set, false otherwise.
+func PbSetRepeatedVector4(userMessage uintptr, fieldName string, index int32, value plugify.Vector4) bool {
+	var __retVal bool
+	__userMessage := C.uintptr_t(userMessage)
+	__fieldName := plugify.ConstructString(fieldName)
+	__index := C.int32_t(index)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
+	plugify.Block{
+		Try: func() {
+			__retVal = bool(C.PbSetRepeatedVector4(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__value))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__fieldName)
+		},
+	}.Do()
+	return __retVal
+}
+
+// PbAddVector4
+//
+//	@brief Adds a Vector4 value to a repeated field in the UserMessage.
+//
+//	@param userMessage: The UserMessage instance.
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//
+//	@return True if the value was successfully added, false otherwise.
+func PbAddVector4(userMessage uintptr, fieldName string, value plugify.Vector4) bool {
+	var __retVal bool
+	__userMessage := C.uintptr_t(userMessage)
+	__fieldName := plugify.ConstructString(fieldName)
+	__value := *(*C.Vector4)(unsafe.Pointer(&value))
+	plugify.Block{
+		Try: func() {
+			__retVal = bool(C.PbAddVector4(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), &__value))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__fieldName)
+		},
+	}.Do()
+	return __retVal
+}
+
 // PbGetRepeatedQAngle
 //
 //	@brief Gets a repeated QAngle value from a field in the UserMessage.
@@ -2572,18 +2793,20 @@ func PbAddVector3(userMessage uintptr, fieldName string, value plugify.Vector3) 
 //	@param userMessage: The UserMessage instance.
 //	@param fieldName: The name of the field.
 //	@param index: The index of the repeated field.
-//	@param out: The output vector2.
+//	@param out: The output vector.
 //
 //	@return True if the field was successfully retrieved, false otherwise.
-func PbGetRepeatedQAngle(userMessage uintptr, fieldName string, index int32, out uintptr) bool {
+func PbGetRepeatedQAngle(userMessage uintptr, fieldName string, index int32, out *plugify.Vector3) bool {
 	var __retVal bool
 	__userMessage := C.uintptr_t(userMessage)
 	__fieldName := plugify.ConstructString(fieldName)
 	__index := C.int32_t(index)
-	__out := C.uintptr_t(out)
+	__out := *(*C.Vector3)(unsafe.Pointer(out))
 	plugify.Block{
 		Try: func() {
-			__retVal = bool(C.PbGetRepeatedQAngle(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, __out))
+			__retVal = bool(C.PbGetRepeatedQAngle(__userMessage, (*C.String)(unsafe.Pointer(&__fieldName)), __index, &__out))
+			// Unmarshal - Convert native data to managed data.
+			*out = *(*plugify.Vector3)(unsafe.Pointer(&__out))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2880,7 +3103,7 @@ func (w *UserMessage) SetRecipientMask(mask uint64) error {
 //	@param fieldName: The name of the field.
 //	@param message: A pointer to store the retrieved message.
 //	@return True if the message was successfully retrieved, false otherwise.
-func (w *UserMessage) GetMessage(fieldName string, message uintptr) (bool, error) {
+func (w *UserMessage) GetMessage(fieldName string, message *uintptr) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -2894,7 +3117,7 @@ func (w *UserMessage) GetMessage(fieldName string, message uintptr) (bool, error
 //	@param index: The index of the repeated field.
 //	@param message: A pointer to store the retrieved message.
 //	@return True if the message was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedMessage(fieldName string, index int32, message uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedMessage(fieldName string, index int32, message *uintptr) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3073,9 +3296,9 @@ func (w *UserMessage) ReadString(fieldName string, index int32) (string, error) 
 //	@param fieldName: Name of the field to read.
 //	@param index: Index of the repeated field (use -1 for non-repeated fields).
 //	@return The color value read, or an empty value if invalid.
-func (w *UserMessage) ReadColor(fieldName string, index int32) (int32, error) {
+func (w *UserMessage) ReadColor(fieldName string, index int32) (plugify.Vector4, error) {
 	if w.handle == 0 {
-		var zero int32
+		var zero plugify.Vector4
 		return zero, UserMessageErrEmptyHandle
 	}
 	return PbReadColor(w.handle, fieldName, index), nil
@@ -3107,6 +3330,19 @@ func (w *UserMessage) ReadVector3(fieldName string, index int32) (plugify.Vector
 	return PbReadVector3(w.handle, fieldName, index), nil
 }
 
+// ReadVector4 - Reads a 4D vector from a UserMessage.
+//
+//	@param fieldName: Name of the field to read.
+//	@param index: Index of the repeated field (use -1 for non-repeated fields).
+//	@return The 4D vector value read, or an empty value if invalid.
+func (w *UserMessage) ReadVector4(fieldName string, index int32) (plugify.Vector4, error) {
+	if w.handle == 0 {
+		var zero plugify.Vector4
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbReadVector4(w.handle, fieldName, index), nil
+}
+
 // ReadQAngle - Reads a QAngle (rotation vector) from a UserMessage.
 //
 //	@param fieldName: Name of the field to read.
@@ -3125,7 +3361,7 @@ func (w *UserMessage) ReadQAngle(fieldName string, index int32) (plugify.Vector3
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetEnum(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetEnum(fieldName string, out *int32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3151,7 +3387,7 @@ func (w *UserMessage) SetEnum(fieldName string, value int32) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetInt32(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetInt32(fieldName string, out *int32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3177,7 +3413,7 @@ func (w *UserMessage) SetInt32(fieldName string, value int32) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetInt64(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetInt64(fieldName string, out *int64) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3203,7 +3439,7 @@ func (w *UserMessage) SetInt64(fieldName string, value int64) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetUInt32(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetUInt32(fieldName string, out *uint32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3229,7 +3465,7 @@ func (w *UserMessage) SetUInt32(fieldName string, value uint32) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetUInt64(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetUInt64(fieldName string, out *uint64) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3255,7 +3491,7 @@ func (w *UserMessage) SetUInt64(fieldName string, value uint64) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetBool(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetBool(fieldName string, out *bool) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3281,7 +3517,7 @@ func (w *UserMessage) SetBool(fieldName string, value bool) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetFloat(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetFloat(fieldName string, out *float32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3307,7 +3543,7 @@ func (w *UserMessage) SetFloat(fieldName string, value float32) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetDouble(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetDouble(fieldName string, out *float64) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3359,7 +3595,7 @@ func (w *UserMessage) SetString(fieldName string, value string) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output string.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetColor(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetColor(fieldName string, out *plugify.Vector4) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3372,7 +3608,7 @@ func (w *UserMessage) GetColor(fieldName string, out uintptr) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param value: The value to set.
 //	@return True if the field was successfully set, false otherwise.
-func (w *UserMessage) SetColor(fieldName string, value int32) (bool, error) {
+func (w *UserMessage) SetColor(fieldName string, value plugify.Vector4) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3385,7 +3621,7 @@ func (w *UserMessage) SetColor(fieldName string, value int32) (bool, error) {
 //	@param fieldName: The name of the field.
 //	@param out: The output string.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetVector2(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetVector2(fieldName string, out *plugify.Vector2) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3411,7 +3647,7 @@ func (w *UserMessage) SetVector2(fieldName string, value plugify.Vector2) (bool,
 //	@param fieldName: The name of the field.
 //	@param out: The output string.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetVector3(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetVector3(fieldName string, out *plugify.Vector3) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3432,12 +3668,38 @@ func (w *UserMessage) SetVector3(fieldName string, value plugify.Vector3) (bool,
 	return PbSetVector3(w.handle, fieldName, value), nil
 }
 
+// GetVector4 - Gets a Vector4 value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param out: The output string.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetVector4(fieldName string, out *plugify.Vector4) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetVector4(w.handle, fieldName, out), nil
+}
+
+// SetVector4 - Sets a Vector3 value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetVector4(fieldName string, value plugify.Vector4) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetVector4(w.handle, fieldName, value), nil
+}
+
 // GetQAngle - Gets a QAngle value from a field in the UserMessage.
 //
 //	@param fieldName: The name of the field.
 //	@param out: The output string.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetQAngle(fieldName string, out uintptr) (bool, error) {
+func (w *UserMessage) GetQAngle(fieldName string, out *plugify.Vector3) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3464,7 +3726,7 @@ func (w *UserMessage) SetQAngle(fieldName string, value plugify.Vector3) (bool, 
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedEnum(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedEnum(fieldName string, index int32, out *int32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3505,7 +3767,7 @@ func (w *UserMessage) AddEnum(fieldName string, value int32) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedInt32(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedInt32(fieldName string, index int32, out *int32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3546,7 +3808,7 @@ func (w *UserMessage) AddInt32(fieldName string, value int32) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedInt64(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedInt64(fieldName string, index int32, out *int64) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3587,7 +3849,7 @@ func (w *UserMessage) AddInt64(fieldName string, value int64) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedUInt32(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedUInt32(fieldName string, index int32, out *uint32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3628,7 +3890,7 @@ func (w *UserMessage) AddUInt32(fieldName string, value uint32) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedUInt64(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedUInt64(fieldName string, index int32, out *uint64) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3669,7 +3931,7 @@ func (w *UserMessage) AddUInt64(fieldName string, value uint64) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedBool(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedBool(fieldName string, index int32, out *bool) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3710,7 +3972,7 @@ func (w *UserMessage) AddBool(fieldName string, value bool) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedFloat(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedFloat(fieldName string, index int32, out *float32) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3751,7 +4013,7 @@ func (w *UserMessage) AddFloat(fieldName string, value float32) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output value.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedDouble(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedDouble(fieldName string, index int32, out *float64) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3833,7 +4095,7 @@ func (w *UserMessage) AddString(fieldName string, value string) (bool, error) {
 //	@param index: The index of the repeated field.
 //	@param out: The output color.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedColor(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedColor(fieldName string, index int32, out *plugify.Vector4) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3847,7 +4109,7 @@ func (w *UserMessage) GetRepeatedColor(fieldName string, index int32, out uintpt
 //	@param index: The index of the repeated field.
 //	@param value: The value to set.
 //	@return True if the field was successfully set, false otherwise.
-func (w *UserMessage) SetRepeatedColor(fieldName string, index int32, value int32) (bool, error) {
+func (w *UserMessage) SetRepeatedColor(fieldName string, index int32, value plugify.Vector4) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3860,7 +4122,7 @@ func (w *UserMessage) SetRepeatedColor(fieldName string, index int32, value int3
 //	@param fieldName: The name of the field.
 //	@param value: The value to add.
 //	@return True if the value was successfully added, false otherwise.
-func (w *UserMessage) AddColor(fieldName string, value int32) (bool, error) {
+func (w *UserMessage) AddColor(fieldName string, value plugify.Vector4) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3872,9 +4134,9 @@ func (w *UserMessage) AddColor(fieldName string, value int32) (bool, error) {
 //
 //	@param fieldName: The name of the field.
 //	@param index: The index of the repeated field.
-//	@param out: The output vector2.
+//	@param out: The output vector.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedVector2(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedVector2(fieldName string, index int32, out *plugify.Vector2) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3913,9 +4175,9 @@ func (w *UserMessage) AddVector2(fieldName string, value plugify.Vector2) (bool,
 //
 //	@param fieldName: The name of the field.
 //	@param index: The index of the repeated field.
-//	@param out: The output vector2.
+//	@param out: The output vector.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedVector3(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedVector3(fieldName string, index int32, out *plugify.Vector3) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle
@@ -3950,13 +4212,54 @@ func (w *UserMessage) AddVector3(fieldName string, value plugify.Vector3) (bool,
 	return PbAddVector3(w.handle, fieldName, value), nil
 }
 
+// GetRepeatedVector4 - Gets a repeated Vector4 value from a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param out: The output vector.
+//	@return True if the field was successfully retrieved, false otherwise.
+func (w *UserMessage) GetRepeatedVector4(fieldName string, index int32, out *plugify.Vector4) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbGetRepeatedVector4(w.handle, fieldName, index, out), nil
+}
+
+// SetRepeatedVector4 - Sets a repeated Vector4 value for a field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param index: The index of the repeated field.
+//	@param value: The value to set.
+//	@return True if the field was successfully set, false otherwise.
+func (w *UserMessage) SetRepeatedVector4(fieldName string, index int32, value plugify.Vector4) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbSetRepeatedVector4(w.handle, fieldName, index, value), nil
+}
+
+// AddVector4 - Adds a Vector4 value to a repeated field in the UserMessage.
+//
+//	@param fieldName: The name of the field.
+//	@param value: The value to add.
+//	@return True if the value was successfully added, false otherwise.
+func (w *UserMessage) AddVector4(fieldName string, value plugify.Vector4) (bool, error) {
+	if w.handle == 0 {
+		var zero bool
+		return zero, UserMessageErrEmptyHandle
+	}
+	return PbAddVector4(w.handle, fieldName, value), nil
+}
+
 // GetRepeatedQAngle - Gets a repeated QAngle value from a field in the UserMessage.
 //
 //	@param fieldName: The name of the field.
 //	@param index: The index of the repeated field.
-//	@param out: The output vector2.
+//	@param out: The output vector.
 //	@return True if the field was successfully retrieved, false otherwise.
-func (w *UserMessage) GetRepeatedQAngle(fieldName string, index int32, out uintptr) (bool, error) {
+func (w *UserMessage) GetRepeatedQAngle(fieldName string, index int32, out *plugify.Vector3) (bool, error) {
 	if w.handle == 0 {
 		var zero bool
 		return zero, UserMessageErrEmptyHandle

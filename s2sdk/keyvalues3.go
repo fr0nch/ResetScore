@@ -181,11 +181,10 @@ package s2sdk
 import "C"
 import (
 	"errors"
+	"github.com/untrustedmodders/go-plugify"
 	"reflect"
 	"runtime"
 	"unsafe"
-
-	"github.com/untrustedmodders/go-plugify"
 )
 
 var _ = errors.New("")
@@ -198,9 +197,9 @@ var _ = plugify.Plugin.Loaded
 
 // Kv3Create
 //
-//	@brief Creates a new KeyValues3 object with specified model and subtype
+//	@brief Creates a new KeyValues3 object with specified type and subtype
 //
-//	@param type_: The KV3 model enumeration value
+//	@param type_: The KV3 type enumeration value
 //	@param subtype: The KV3 subtype enumeration value
 //
 //	@return Pointer to the newly created KeyValues3 object
@@ -214,10 +213,10 @@ func Kv3Create(type_ int32, subtype int32) uintptr {
 
 // Kv3CreateWithCluster
 //
-//	@brief Creates a new KeyValues3 object with cluster element, model, and subtype
+//	@brief Creates a new KeyValues3 object with cluster element, type, and subtype
 //
 //	@param cluster_elem: The cluster element index
-//	@param type_: The KV3 model enumeration value
+//	@param type_: The KV3 type enumeration value
 //	@param subtype: The KV3 subtype enumeration value
 //
 //	@return Pointer to the newly created KeyValues3 object
@@ -382,11 +381,11 @@ func Kv3SetFlag(kv uintptr, flag uint8, state bool) {
 
 // Kv3GetType
 //
-//	@brief Gets the basic model of the KeyValues3 object
+//	@brief Gets the basic type of the KeyValues3 object
 //
 //	@param kv: Pointer to the KeyValues3 object
 //
-//	@return The model enumeration value, or 0 if kv is null
+//	@return The type enumeration value, or 0 if kv is null
 func Kv3GetType(kv uintptr) uint8 {
 	var __retVal uint8
 	__kv := C.uintptr_t(kv)
@@ -396,11 +395,11 @@ func Kv3GetType(kv uintptr) uint8 {
 
 // Kv3GetTypeEx
 //
-//	@brief Gets the extended model of the KeyValues3 object
+//	@brief Gets the extended type of the KeyValues3 object
 //
 //	@param kv: Pointer to the KeyValues3 object
 //
-//	@return The extended model enumeration value, or 0 if kv is null
+//	@return The extended type enumeration value, or 0 if kv is null
 func Kv3GetTypeEx(kv uintptr) uint8 {
 	var __retVal uint8
 	__kv := C.uintptr_t(kv)
@@ -450,11 +449,11 @@ func Kv3SetHasInvalidMemberNames(kv uintptr, bValue bool) {
 
 // Kv3GetTypeAsString
 //
-//	@brief Gets the model as a string representation
+//	@brief Gets the type as a string representation
 //
 //	@param kv: Pointer to the KeyValues3 object
 //
-//	@return String representation of the model, or empty string if kv is null
+//	@return String representation of the type, or empty string if kv is null
 func Kv3GetTypeAsString(kv uintptr) string {
 	var __retVal string
 	var __retVal_native plugify.PlgString
@@ -1218,12 +1217,13 @@ func Kv3SetToBinaryBlobExternal(kv uintptr, blob []uint8, free_mem bool) {
 //	@param kv: Pointer to the KeyValues3 object
 //	@param defaultValue: Default color value to return if kv is null
 //
-//	@return Color value as int32_t or defaultValue
-func Kv3GetColor(kv uintptr, defaultValue int32) int32 {
-	var __retVal int32
+//	@return Color value as vec4 or defaultValue
+func Kv3GetColor(kv uintptr, defaultValue plugify.Vector4) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__kv := C.uintptr_t(kv)
-	__defaultValue := C.int32_t(defaultValue)
-	__retVal = int32(C.Kv3GetColor(__kv, __defaultValue))
+	__defaultValue := *(*C.Vector4)(unsafe.Pointer(&defaultValue))
+	__native := C.Kv3GetColor(__kv, &__defaultValue)
+	__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 	return __retVal
 }
 
@@ -1232,11 +1232,11 @@ func Kv3GetColor(kv uintptr, defaultValue int32) int32 {
 //	@brief Sets the KeyValues3 object to a color value
 //
 //	@param kv: Pointer to the KeyValues3 object
-//	@param color: Color value as int32_t to set
-func Kv3SetColor(kv uintptr, color int32) {
+//	@param color: Color value as vec4 to set
+func Kv3SetColor(kv uintptr, color plugify.Vector4) {
 	__kv := C.uintptr_t(kv)
-	__color := C.int32_t(color)
-	C.Kv3SetColor(__kv, __color)
+	__color := *(*C.Vector4)(unsafe.Pointer(&color))
+	C.Kv3SetColor(__kv, &__color)
 }
 
 // Kv3GetVector
@@ -2161,15 +2161,16 @@ func Kv3GetMemberString(kv uintptr, name string, defaultValue string) string {
 //	@param name: Name of the member
 //	@param defaultValue: Default color value to return if member not found
 //
-//	@return Color value as int32_t or defaultValue
-func Kv3GetMemberColor(kv uintptr, name string, defaultValue int32) int32 {
-	var __retVal int32
+//	@return Color value as vec4 or defaultValue
+func Kv3GetMemberColor(kv uintptr, name string, defaultValue plugify.Vector4) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__kv := C.uintptr_t(kv)
 	__name := plugify.ConstructString(name)
-	__defaultValue := C.int32_t(defaultValue)
+	__defaultValue := *(*C.Vector4)(unsafe.Pointer(&defaultValue))
 	plugify.Block{
 		Try: func() {
-			__retVal = int32(C.Kv3GetMemberColor(__kv, (*C.String)(unsafe.Pointer(&__name)), __defaultValue))
+			__native := C.Kv3GetMemberColor(__kv, (*C.String)(unsafe.Pointer(&__name)), &__defaultValue)
+			__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -2879,14 +2880,14 @@ func Kv3SetMemberStringExternal(kv uintptr, name string, str string, subtype uin
 //
 //	@param kv: Pointer to the KeyValues3 object
 //	@param name: Name of the member
-//	@param color: Color value as int32_t to set
-func Kv3SetMemberColor(kv uintptr, name string, color int32) {
+//	@param color: Color value as vec4 to set
+func Kv3SetMemberColor(kv uintptr, name string, color plugify.Vector4) {
 	__kv := C.uintptr_t(kv)
 	__name := plugify.ConstructString(name)
-	__color := C.int32_t(color)
+	__color := *(*C.Vector4)(unsafe.Pointer(&color))
 	plugify.Block{
 		Try: func() {
-			C.Kv3SetMemberColor(__kv, (*C.String)(unsafe.Pointer(&__name)), __color)
+			C.Kv3SetMemberColor(__kv, (*C.String)(unsafe.Pointer(&__name)), &__color)
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -3795,18 +3796,18 @@ type KeyValues3 struct {
 	noCopy    noCopy
 }
 
-// NewKeyValues3Kv3Create - Creates a new KeyValues3 object with specified model and subtype
+// NewKeyValues3Kv3Create - Creates a new KeyValues3 object with specified type and subtype
 //
-//	@param type_: The KV3 model enumeration value
+//	@param type_: The KV3 type enumeration value
 //	@param subtype: The KV3 subtype enumeration value
 func NewKeyValues3Kv3Create(type_ int32, subtype int32) *KeyValues3 {
 	return NewKeyValues3Owned(Kv3Create(type_, subtype))
 }
 
-// NewKeyValues3Kv3CreateWithCluster - Creates a new KeyValues3 object with cluster element, model, and subtype
+// NewKeyValues3Kv3CreateWithCluster - Creates a new KeyValues3 object with cluster element, type, and subtype
 //
 //	@param cluster_elem: The cluster element index
-//	@param type_: The KV3 model enumeration value
+//	@param type_: The KV3 type enumeration value
 //	@param subtype: The KV3 subtype enumeration value
 func NewKeyValues3Kv3CreateWithCluster(cluster_elem int32, type_ int32, subtype int32) *KeyValues3 {
 	return NewKeyValues3Owned(Kv3CreateWithCluster(cluster_elem, type_, subtype))
@@ -4000,9 +4001,9 @@ func (w *KeyValues3) SetFlag(flag uint8, state bool) error {
 	return nil
 }
 
-// GetType - Gets the basic model of the KeyValues3 object
+// GetType - Gets the basic type of the KeyValues3 object
 //
-//	@return The model enumeration value, or 0 if kv is null
+//	@return The type enumeration value, or 0 if kv is null
 func (w *KeyValues3) GetType() (uint8, error) {
 	if w.handle == 0 {
 		var zero uint8
@@ -4011,9 +4012,9 @@ func (w *KeyValues3) GetType() (uint8, error) {
 	return Kv3GetType(w.handle), nil
 }
 
-// GetTypeEx - Gets the extended model of the KeyValues3 object
+// GetTypeEx - Gets the extended type of the KeyValues3 object
 //
-//	@return The extended model enumeration value, or 0 if kv is null
+//	@return The extended type enumeration value, or 0 if kv is null
 func (w *KeyValues3) GetTypeEx() (uint8, error) {
 	if w.handle == 0 {
 		var zero uint8
@@ -4055,9 +4056,9 @@ func (w *KeyValues3) SetHasInvalidMemberNames(bValue bool) error {
 	return nil
 }
 
-// GetTypeAsString - Gets the model as a string representation
+// GetTypeAsString - Gets the type as a string representation
 //
-//	@return String representation of the model, or empty string if kv is null
+//	@return String representation of the type, or empty string if kv is null
 func (w *KeyValues3) GetTypeAsString() (string, error) {
 	if w.handle == 0 {
 		var zero string
@@ -4605,10 +4606,10 @@ func (w *KeyValues3) SetToBinaryBlobExternal(blob []uint8, free_mem bool) error 
 // GetColor - Gets the color value from the KeyValues3 object
 //
 //	@param defaultValue: Default color value to return if kv is null
-//	@return Color value as int32_t or defaultValue
-func (w *KeyValues3) GetColor(defaultValue int32) (int32, error) {
+//	@return Color value as vec4 or defaultValue
+func (w *KeyValues3) GetColor(defaultValue plugify.Vector4) (plugify.Vector4, error) {
 	if w.handle == 0 {
-		var zero int32
+		var zero plugify.Vector4
 		return zero, KeyValues3ErrEmptyHandle
 	}
 	return Kv3GetColor(w.handle, defaultValue), nil
@@ -4616,8 +4617,8 @@ func (w *KeyValues3) GetColor(defaultValue int32) (int32, error) {
 
 // SetColor - Sets the KeyValues3 object to a color value
 //
-//	@param color: Color value as int32_t to set
-func (w *KeyValues3) SetColor(color int32) error {
+//	@param color: Color value as vec4 to set
+func (w *KeyValues3) SetColor(color plugify.Vector4) error {
 	if w.handle == 0 {
 		return KeyValues3ErrEmptyHandle
 	}
@@ -5183,10 +5184,10 @@ func (w *KeyValues3) GetMemberString(name string, defaultValue string) (string, 
 //
 //	@param name: Name of the member
 //	@param defaultValue: Default color value to return if member not found
-//	@return Color value as int32_t or defaultValue
-func (w *KeyValues3) GetMemberColor(name string, defaultValue int32) (int32, error) {
+//	@return Color value as vec4 or defaultValue
+func (w *KeyValues3) GetMemberColor(name string, defaultValue plugify.Vector4) (plugify.Vector4, error) {
 	if w.handle == 0 {
-		var zero int32
+		var zero plugify.Vector4
 		return zero, KeyValues3ErrEmptyHandle
 	}
 	return Kv3GetMemberColor(w.handle, name, defaultValue), nil
@@ -5561,8 +5562,8 @@ func (w *KeyValues3) SetMemberStringExternal(name string, str string, subtype ui
 // SetMemberColor - Sets a table member to a color value
 //
 //	@param name: Name of the member
-//	@param color: Color value as int32_t to set
-func (w *KeyValues3) SetMemberColor(name string, color int32) error {
+//	@param color: Color value as vec4 to set
+func (w *KeyValues3) SetMemberColor(name string, color plugify.Vector4) error {
 	if w.handle == 0 {
 		return KeyValues3ErrEmptyHandle
 	}

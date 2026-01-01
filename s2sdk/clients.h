@@ -200,15 +200,15 @@ static void SetClientFlags(int32_t playerSlot, int32_t flags) {
 	__s2sdk_SetClientFlags(playerSlot, flags);
 }
 
-extern int32_t (*__s2sdk_GetClientRenderColor)(int32_t);
+extern Vector4 (*__s2sdk_GetClientRenderColor)(int32_t);
 
-static int32_t GetClientRenderColor(int32_t playerSlot) {
+static Vector4 GetClientRenderColor(int32_t playerSlot) {
 	return __s2sdk_GetClientRenderColor(playerSlot);
 }
 
-extern void (*__s2sdk_SetClientRenderColor)(int32_t, int32_t);
+extern void (*__s2sdk_SetClientRenderColor)(int32_t, Vector4*);
 
-static void SetClientRenderColor(int32_t playerSlot, int32_t color) {
+static void SetClientRenderColor(int32_t playerSlot, Vector4* color) {
 	__s2sdk_SetClientRenderColor(playerSlot, color);
 }
 

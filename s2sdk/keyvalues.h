@@ -68,15 +68,15 @@ static uintptr_t Kv1GetNextKey(uintptr_t kv) {
 	return __s2sdk_Kv1GetNextKey(kv);
 }
 
-extern int32_t (*__s2sdk_Kv1GetColor)(uintptr_t, String*, int32_t);
+extern Vector4 (*__s2sdk_Kv1GetColor)(uintptr_t, String*, Vector4*);
 
-static int32_t Kv1GetColor(uintptr_t kv, String* keyName, int32_t defaultValue) {
+static Vector4 Kv1GetColor(uintptr_t kv, String* keyName, Vector4* defaultValue) {
 	return __s2sdk_Kv1GetColor(kv, keyName, defaultValue);
 }
 
-extern void (*__s2sdk_Kv1SetColor)(uintptr_t, String*, int32_t);
+extern void (*__s2sdk_Kv1SetColor)(uintptr_t, String*, Vector4*);
 
-static void Kv1SetColor(uintptr_t kv, String* keyName, int32_t value) {
+static void Kv1SetColor(uintptr_t kv, String* keyName, Vector4* value) {
 	__s2sdk_Kv1SetColor(kv, keyName, value);
 }
 

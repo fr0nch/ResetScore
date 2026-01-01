@@ -137,11 +137,10 @@ package s2sdk
 import "C"
 import (
 	"errors"
+	"github.com/untrustedmodders/go-plugify"
 	"reflect"
 	"runtime"
 	"unsafe"
-
-	"github.com/untrustedmodders/go-plugify"
 )
 
 var _ = errors.New("")
@@ -252,9 +251,9 @@ func ClientIndexToPlayerSlot(clientIndex int32) int32 {
 
 // PlayerServicesToPlayerSlot
 //
-//	@brief Retrieves the player slot from a given player manager.
+//	@brief Retrieves the player slot from a given player service.
 //
-//	@param manager: The manager pointer. Like CCSPlayer_ItemServices, CCSPlayer_WeaponServices ect.
+//	@param service: The service pointer. Like CCSPlayer_ItemServices, CCSPlayer_WeaponServices ect.
 //
 //	@return The player slot if valid, otherwise -1.
 func PlayerServicesToPlayerSlot(service uintptr) int32 {
@@ -586,11 +585,11 @@ func IsFakeClient(playerSlot int32) bool {
 
 // GetClientMoveType
 //
-//	@brief Retrieves the movement model of an client.
+//	@brief Retrieves the movement type of an client.
 //
-//	@param playerSlot: The index of the player's slot whose movement model is to be retrieved.
+//	@param playerSlot: The index of the player's slot whose movement type is to be retrieved.
 //
-//	@return The movement model of the entity, or 0 if the entity is invalid.
+//	@return The movement type of the entity, or 0 if the entity is invalid.
 func GetClientMoveType(playerSlot int32) MoveType {
 	var __retVal MoveType
 	__playerSlot := C.int32_t(playerSlot)
@@ -600,10 +599,10 @@ func GetClientMoveType(playerSlot int32) MoveType {
 
 // SetClientMoveType
 //
-//	@brief Sets the movement model of an client.
+//	@brief Sets the movement type of an client.
 //
-//	@param playerSlot: The index of the player's slot whose movement model is to be set.
-//	@param moveType: The movement model of the entity, or 0 if the entity is invalid.
+//	@param playerSlot: The index of the player's slot whose movement type is to be set.
+//	@param moveType: The movement type of the entity, or 0 if the entity is invalid.
 func SetClientMoveType(playerSlot int32, moveType MoveType) {
 	__playerSlot := C.int32_t(playerSlot)
 	__moveType := C.int32_t(moveType)
@@ -669,10 +668,11 @@ func SetClientFlags(playerSlot int32, flags int32) {
 //	@param playerSlot: The index of the player's slot whose render color is to be retrieved.
 //
 //	@return The raw color value of the client's render color, or 0 if the client is invalid.
-func GetClientRenderColor(playerSlot int32) int32 {
-	var __retVal int32
+func GetClientRenderColor(playerSlot int32) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__playerSlot := C.int32_t(playerSlot)
-	__retVal = int32(C.GetClientRenderColor(__playerSlot))
+	__native := C.GetClientRenderColor(__playerSlot)
+	__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 	return __retVal
 }
 
@@ -682,10 +682,10 @@ func GetClientRenderColor(playerSlot int32) int32 {
 //
 //	@param playerSlot: The index of the player's slot whose render color is to be set.
 //	@param color: The new raw color value to set for the client's render color.
-func SetClientRenderColor(playerSlot int32, color int32) {
+func SetClientRenderColor(playerSlot int32, color plugify.Vector4) {
 	__playerSlot := C.int32_t(playerSlot)
-	__color := C.int32_t(color)
-	C.SetClientRenderColor(__playerSlot, __color)
+	__color := *(*C.Vector4)(unsafe.Pointer(&color))
+	C.SetClientRenderColor(__playerSlot, &__color)
 }
 
 // GetClientRenderMode
@@ -1486,7 +1486,7 @@ func ApplyLocalAngularVelocityImpulseToClient(playerSlot int32, angImpulse plugi
 //	@param activatorHandle: The index of the player's slot that initiated the sequence of actions.
 //	@param callerHandle: The index of the player's slot sending this event. Use -1 to specify
 //	@param value: The value associated with the input action.
-//	@param type_: The model or classification of the value.
+//	@param type_: The type or classification of the value.
 //	@param outputId: An identifier for tracking the output of this operation.
 func AcceptClientInput(playerSlot int32, inputName string, activatorHandle int32, callerHandle int32, value any, type_ FieldType, outputId int32) {
 	__playerSlot := C.int32_t(playerSlot)
@@ -1588,7 +1588,7 @@ func DisconnectClientRedirectedOutput(playerSlot int32, output string, functionN
 //	@param activatorHandle: The entity activating the output.
 //	@param callerHandle: The entity that called the output.
 //	@param value: The value associated with the input action.
-//	@param type_: The model or classification of the value.
+//	@param type_: The type or classification of the value.
 //	@param delay: Delay in seconds before firing the output.
 func FireClientOutput(playerSlot int32, outputName string, activatorHandle int32, callerHandle int32, value any, type_ FieldType, delay float32) {
 	__playerSlot := C.int32_t(playerSlot)
@@ -1681,7 +1681,7 @@ func FollowClientMerge(playerSlot int32, attachmentHandle int32, boneOrAttachNam
 //	@param force: Direction and magnitude of force to apply
 //	@param hitPos: Position where the damage hit occurred
 //	@param damage: Amount of damage to apply
-//	@param damageTypes: Bitfield of damage model flags
+//	@param damageTypes: Bitfield of damage type flags
 //
 //	@return Amount of damage actually applied to the client
 func TakeClientDamage(playerSlot int32, inflictorSlot int32, attackerSlot int32, force plugify.Vector3, hitPos plugify.Vector3, damage float32, damageTypes DamageTypes) int32 {

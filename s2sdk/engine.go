@@ -27,11 +27,10 @@ package s2sdk
 import "C"
 import (
 	"errors"
+	"github.com/untrustedmodders/go-plugify"
 	"reflect"
 	"runtime"
 	"unsafe"
-
-	"github.com/untrustedmodders/go-plugify"
 )
 
 var _ = errors.New("")
@@ -301,7 +300,7 @@ func IsServerPaused() bool {
 //	@brief Queues a task to be executed on the next frame.
 //
 //	@param callback: A callback function to be executed on the next frame.
-//	@param userData: An array intended to hold user-related data, allowing for elements of any model.
+//	@param userData: An array intended to hold user-related data, allowing for elements of any type.
 func QueueTaskForNextFrame(callback TaskCallback, userData []any) {
 	__callback := plugify.GetFunctionPointerForDelegate(callback)
 	__userData := plugify.ConstructVectorVariant(userData)
@@ -321,7 +320,7 @@ func QueueTaskForNextFrame(callback TaskCallback, userData []any) {
 //	@brief Queues a task to be executed on the next world update.
 //
 //	@param callback: A callback function to be executed on the next world update.
-//	@param userData: An array intended to hold user-related data, allowing for elements of any model.
+//	@param userData: An array intended to hold user-related data, allowing for elements of any type.
 func QueueTaskForNextWorldUpdate(callback TaskCallback, userData []any) {
 	__callback := plugify.GetFunctionPointerForDelegate(callback)
 	__userData := plugify.ConstructVectorVariant(userData)

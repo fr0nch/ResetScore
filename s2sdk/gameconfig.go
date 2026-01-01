@@ -9,6 +9,11 @@ package s2sdk
 #cgo noescape GetGameConfigAddress
 #cgo noescape GetGameConfigVTable
 #cgo noescape GetGameConfigSignature
+#cgo noescape GetGameConfigPatchAll
+#cgo noescape GetGameConfigOffsetAll
+#cgo noescape GetGameConfigAddressAll
+#cgo noescape GetGameConfigVTableAll
+#cgo noescape GetGameConfigSignatureAll
 */
 import "C"
 import (
@@ -175,6 +180,121 @@ func GetGameConfigSignature(id uint32, name string) uintptr {
 	plugify.Block{
 		Try: func() {
 			__retVal = uintptr(C.GetGameConfigSignature(__id, (*C.String)(unsafe.Pointer(&__name))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetGameConfigPatchAll
+//
+//	@brief Retrieves a patch by scanning all loaded game configurations.
+//
+//	@param name: The name of the patch to be retrieved.
+//
+//	@return A string containing the patch, or an empty string if not found.
+func GetGameConfigPatchAll(name string) string {
+	var __retVal string
+	var __retVal_native plugify.PlgString
+	__name := plugify.ConstructString(name)
+	plugify.Block{
+		Try: func() {
+			__native := C.GetGameConfigPatchAll((*C.String)(unsafe.Pointer(&__name)))
+			__retVal_native = *(*plugify.PlgString)(unsafe.Pointer(&__native))
+			// Unmarshal - Convert native data to managed data.
+			__retVal = plugify.GetStringData(&__retVal_native)
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__retVal_native)
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetGameConfigOffsetAll
+//
+//	@brief Retrieves an offset by scanning all loaded game configurations.
+//
+//	@param name: The name whose offset is to be retrieved.
+//
+//	@return The offset associated with the specified name, or -1 if not found.
+func GetGameConfigOffsetAll(name string) int32 {
+	var __retVal int32
+	__name := plugify.ConstructString(name)
+	plugify.Block{
+		Try: func() {
+			__retVal = int32(C.GetGameConfigOffsetAll((*C.String)(unsafe.Pointer(&__name))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetGameConfigAddressAll
+//
+//	@brief Retrieves an address by scanning all loaded game configurations.
+//
+//	@param name: The name whose address is to be retrieved.
+//
+//	@return A pointer to the address associated with the specified name, or nullptr if not found.
+func GetGameConfigAddressAll(name string) uintptr {
+	var __retVal uintptr
+	__name := plugify.ConstructString(name)
+	plugify.Block{
+		Try: func() {
+			__retVal = uintptr(C.GetGameConfigAddressAll((*C.String)(unsafe.Pointer(&__name))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetGameConfigVTableAll
+//
+//	@brief Retrieves a vtable by scanning all loaded game configurations.
+//
+//	@param name: The name of the vtable to be retrieved.
+//
+//	@return A pointer to the vtable associated with the specified name, or nullptr if not found.
+func GetGameConfigVTableAll(name string) uintptr {
+	var __retVal uintptr
+	__name := plugify.ConstructString(name)
+	plugify.Block{
+		Try: func() {
+			__retVal = uintptr(C.GetGameConfigVTableAll((*C.String)(unsafe.Pointer(&__name))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetGameConfigSignatureAll
+//
+//	@brief Retrieves a signature by scanning all loaded game configurations.
+//
+//	@param name: The name whose signature is to be resolved and retrieved.
+//
+//	@return A pointer to the signature associated with the specified name, or nullptr if not found.
+func GetGameConfigSignatureAll(name string) uintptr {
+	var __retVal uintptr
+	__name := plugify.ConstructString(name)
+	plugify.Block{
+		Try: func() {
+			__retVal = uintptr(C.GetGameConfigSignatureAll((*C.String)(unsafe.Pointer(&__name))))
 		},
 		Finally: func() {
 			// Perform cleanup.

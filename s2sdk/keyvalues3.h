@@ -398,15 +398,15 @@ static void Kv3SetToBinaryBlobExternal(uintptr_t kv, Vector* blob, bool free_mem
 	__s2sdk_Kv3SetToBinaryBlobExternal(kv, blob, free_mem);
 }
 
-extern int32_t (*__s2sdk_Kv3GetColor)(uintptr_t, int32_t);
+extern Vector4 (*__s2sdk_Kv3GetColor)(uintptr_t, Vector4*);
 
-static int32_t Kv3GetColor(uintptr_t kv, int32_t defaultValue) {
+static Vector4 Kv3GetColor(uintptr_t kv, Vector4* defaultValue) {
 	return __s2sdk_Kv3GetColor(kv, defaultValue);
 }
 
-extern void (*__s2sdk_Kv3SetColor)(uintptr_t, int32_t);
+extern void (*__s2sdk_Kv3SetColor)(uintptr_t, Vector4*);
 
-static void Kv3SetColor(uintptr_t kv, int32_t color) {
+static void Kv3SetColor(uintptr_t kv, Vector4* color) {
 	__s2sdk_Kv3SetColor(kv, color);
 }
 
@@ -686,9 +686,9 @@ static String Kv3GetMemberString(uintptr_t kv, String* name, String* defaultValu
 	return __s2sdk_Kv3GetMemberString(kv, name, defaultValue);
 }
 
-extern int32_t (*__s2sdk_Kv3GetMemberColor)(uintptr_t, String*, int32_t);
+extern Vector4 (*__s2sdk_Kv3GetMemberColor)(uintptr_t, String*, Vector4*);
 
-static int32_t Kv3GetMemberColor(uintptr_t kv, String* name, int32_t defaultValue) {
+static Vector4 Kv3GetMemberColor(uintptr_t kv, String* name, Vector4* defaultValue) {
 	return __s2sdk_Kv3GetMemberColor(kv, name, defaultValue);
 }
 
@@ -872,9 +872,9 @@ static void Kv3SetMemberStringExternal(uintptr_t kv, String* name, String* str, 
 	__s2sdk_Kv3SetMemberStringExternal(kv, name, str, subtype);
 }
 
-extern void (*__s2sdk_Kv3SetMemberColor)(uintptr_t, String*, int32_t);
+extern void (*__s2sdk_Kv3SetMemberColor)(uintptr_t, String*, Vector4*);
 
-static void Kv3SetMemberColor(uintptr_t kv, String* name, int32_t color) {
+static void Kv3SetMemberColor(uintptr_t kv, String* name, Vector4* color) {
 	__s2sdk_Kv3SetMemberColor(kv, name, color);
 }
 

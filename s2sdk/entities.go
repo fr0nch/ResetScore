@@ -57,6 +57,7 @@ package s2sdk
 #cgo noescape SetEntityOwner
 #cgo noescape GetEntityParent
 #cgo noescape SetEntityParent
+#cgo noescape SetEntityParentAttachment
 #cgo noescape GetEntityAbsOrigin
 #cgo noescape SetEntityAbsOrigin
 #cgo noescape GetEntityAbsScale
@@ -728,11 +729,11 @@ func SetEntityName(entityHandle int32, name string) {
 
 // GetEntityMoveType
 //
-//	@brief Retrieves the movement model of an entity.
+//	@brief Retrieves the movement type of an entity.
 //
-//	@param entityHandle: The handle of the entity whose movement model is to be retrieved.
+//	@param entityHandle: The handle of the entity whose movement type is to be retrieved.
 //
-//	@return The movement model of the entity, or 0 if the entity is invalid.
+//	@return The movement type of the entity, or 0 if the entity is invalid.
 func GetEntityMoveType(entityHandle int32) MoveType {
 	var __retVal MoveType
 	__entityHandle := C.int32_t(entityHandle)
@@ -742,10 +743,10 @@ func GetEntityMoveType(entityHandle int32) MoveType {
 
 // SetEntityMoveType
 //
-//	@brief Sets the movement model of an entity.
+//	@brief Sets the movement type of an entity.
 //
-//	@param entityHandle: The handle of the entity whose movement model is to be set.
-//	@param moveType: The new movement model to set for the entity.
+//	@param entityHandle: The handle of the entity whose movement type is to be set.
+//	@param moveType: The new movement type to set for the entity.
 func SetEntityMoveType(entityHandle int32, moveType MoveType) {
 	__entityHandle := C.int32_t(entityHandle)
 	__moveType := C.int32_t(moveType)
@@ -811,10 +812,11 @@ func SetEntityFlags(entityHandle int32, flags int32) {
 //	@param entityHandle: The handle of the entity whose render color is to be retrieved.
 //
 //	@return The raw color value of the entity's render color, or 0 if the entity is invalid.
-func GetEntityRenderColor(entityHandle int32) int32 {
-	var __retVal int32
+func GetEntityRenderColor(entityHandle int32) plugify.Vector4 {
+	var __retVal plugify.Vector4
 	__entityHandle := C.int32_t(entityHandle)
-	__retVal = int32(C.GetEntityRenderColor(__entityHandle))
+	__native := C.GetEntityRenderColor(__entityHandle)
+	__retVal = *(*plugify.Vector4)(unsafe.Pointer(&__native))
 	return __retVal
 }
 
@@ -824,10 +826,10 @@ func GetEntityRenderColor(entityHandle int32) int32 {
 //
 //	@param entityHandle: The handle of the entity whose render color is to be set.
 //	@param color: The new raw color value to set for the entity's render color.
-func SetEntityRenderColor(entityHandle int32, color int32) {
+func SetEntityRenderColor(entityHandle int32, color plugify.Vector4) {
 	__entityHandle := C.int32_t(entityHandle)
-	__color := C.int32_t(color)
-	C.SetEntityRenderColor(__entityHandle, __color)
+	__color := *(*C.Vector4)(unsafe.Pointer(&color))
+	C.SetEntityRenderColor(__entityHandle, &__color)
 }
 
 // GetEntityRenderMode
@@ -1031,15 +1033,27 @@ func GetEntityParent(entityHandle int32) int32 {
 //	@brief Sets the parent of an entity.
 //
 //	@param entityHandle: The handle of the entity whose parent is to be set.
+//	@param parentHandle: The handle of the new parent entity. (Can be invalid to clean parent)
+func SetEntityParent(entityHandle int32, parentHandle int32) {
+	__entityHandle := C.int32_t(entityHandle)
+	__parentHandle := C.int32_t(parentHandle)
+	C.SetEntityParent(__entityHandle, __parentHandle)
+}
+
+// SetEntityParentAttachment
+//
+//	@brief Sets the parent of an entity to attachment by name.
+//
+//	@param entityHandle: The handle of the entity whose parent is to be set.
 //	@param parentHandle: The handle of the new parent entity.
 //	@param attachmentName: The name of the entity's attachment.
-func SetEntityParent(entityHandle int32, parentHandle int32, attachmentName string) {
+func SetEntityParentAttachment(entityHandle int32, parentHandle int32, attachmentName string) {
 	__entityHandle := C.int32_t(entityHandle)
 	__parentHandle := C.int32_t(parentHandle)
 	__attachmentName := plugify.ConstructString(attachmentName)
 	plugify.Block{
 		Try: func() {
-			C.SetEntityParent(__entityHandle, __parentHandle, (*C.String)(unsafe.Pointer(&__attachmentName)))
+			C.SetEntityParentAttachment(__entityHandle, __parentHandle, (*C.String)(unsafe.Pointer(&__attachmentName)))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -1690,7 +1704,7 @@ func ApplyLocalAngularVelocityImpulseToEntity(entityHandle int32, angImpulse plu
 //	@param activatorHandle: The handle of the entity that initiated the sequence of actions.
 //	@param callerHandle: The handle of the entity sending this event.
 //	@param value: The value associated with the input action.
-//	@param type_: The model or classification of the value.
+//	@param type_: The type or classification of the value.
 //	@param outputId: An identifier for tracking the output of this operation.
 func AcceptEntityInput(entityHandle int32, inputName string, activatorHandle int32, callerHandle int32, value any, type_ FieldType, outputId int32) {
 	__entityHandle := C.int32_t(entityHandle)
@@ -1792,7 +1806,7 @@ func DisconnectEntityRedirectedOutput(entityHandle int32, output string, functio
 //	@param activatorHandle: The entity activating the output.
 //	@param callerHandle: The entity that called the output.
 //	@param value: The value associated with the input action.
-//	@param type_: The model or classification of the value.
+//	@param type_: The type or classification of the value.
 //	@param delay: Delay in seconds before firing the output.
 func FireEntityOutput(entityHandle int32, outputName string, activatorHandle int32, callerHandle int32, value any, type_ FieldType, delay float32) {
 	__entityHandle := C.int32_t(entityHandle)
@@ -1885,7 +1899,7 @@ func FollowEntityMerge(entityHandle int32, attachmentHandle int32, boneOrAttachN
 //	@param force: Direction and magnitude of force to apply
 //	@param hitPos: Position where the damage hit occurred
 //	@param damage: Amount of damage to apply
-//	@param damageTypes: Bitfield of damage model flags
+//	@param damageTypes: Bitfield of damage type flags
 //
 //	@return Amount of damage actually applied to the entity
 func TakeEntityDamage(entityHandle int32, inflictorHandle int32, attackerHandle int32, force plugify.Vector3, hitPos plugify.Vector3, damage float32, damageTypes DamageTypes) int32 {

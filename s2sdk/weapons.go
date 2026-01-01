@@ -65,11 +65,11 @@ func GetWeaponVData(entityHandle int32) uintptr {
 
 // GetWeaponType
 //
-//	@brief Retrieves the weapon model of a given entity.
+//	@brief Retrieves the weapon type of a given entity.
 //
 //	@param entityHandle: The handle of the entity (weapon).
 //
-//	@return The model of the weapon, or WEAPONTYPE_UNKNOWN if the entity is invalid.
+//	@return The type of the weapon, or WEAPONTYPE_UNKNOWN if the entity is invalid.
 func GetWeaponType(entityHandle int32) CSWeaponType {
 	var __retVal CSWeaponType
 	__entityHandle := C.int32_t(entityHandle)

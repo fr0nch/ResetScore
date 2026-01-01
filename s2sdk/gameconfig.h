@@ -44,3 +44,33 @@ static uintptr_t GetGameConfigSignature(uint32_t id, String* name) {
 	return __s2sdk_GetGameConfigSignature(id, name);
 }
 
+extern String (*__s2sdk_GetGameConfigPatchAll)(String*);
+
+static String GetGameConfigPatchAll(String* name) {
+	return __s2sdk_GetGameConfigPatchAll(name);
+}
+
+extern int32_t (*__s2sdk_GetGameConfigOffsetAll)(String*);
+
+static int32_t GetGameConfigOffsetAll(String* name) {
+	return __s2sdk_GetGameConfigOffsetAll(name);
+}
+
+extern uintptr_t (*__s2sdk_GetGameConfigAddressAll)(String*);
+
+static uintptr_t GetGameConfigAddressAll(String* name) {
+	return __s2sdk_GetGameConfigAddressAll(name);
+}
+
+extern uintptr_t (*__s2sdk_GetGameConfigVTableAll)(String*);
+
+static uintptr_t GetGameConfigVTableAll(String* name) {
+	return __s2sdk_GetGameConfigVTableAll(name);
+}
+
+extern uintptr_t (*__s2sdk_GetGameConfigSignatureAll)(String*);
+
+static uintptr_t GetGameConfigSignatureAll(String* name) {
+	return __s2sdk_GetGameConfigSignatureAll(name);
+}
+
