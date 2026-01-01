@@ -11,9 +11,12 @@ package s2sdk
 #cgo noescape IsValidEntHandle
 #cgo noescape IsValidEntPointer
 #cgo noescape GetFirstActiveEntity
-#cgo noescape GetConcreteEntityListPointer
+#cgo noescape GetPrevActiveEntity
+#cgo noescape GetNextActiveEntity
 #cgo noescape HookEntityOutput
 #cgo noescape UnhookEntityOutput
+#cgo noescape FindEntityByClassname
+#cgo noescape FindEntityByClassnameNearest
 #cgo noescape FindEntityByClassnameWithin
 #cgo noescape FindEntityByName
 #cgo noescape FindEntityByNameNearest
@@ -116,16 +119,20 @@ package s2sdk
 */
 import "C"
 import (
+	"errors"
 	"github.com/untrustedmodders/go-plugify"
 	"reflect"
+	"runtime"
 	"unsafe"
 )
 
+var _ = errors.New("")
 var _ = reflect.TypeOf(0)
+var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.Plugin.Loaded
 
-// Generated with https://github.com/untrustedmodders/plugify-module-golang/blob/main/generator/generator.py from s2sdk (group: entities)
+// Generated from s2sdk (group: entities)
 
 // EntIndexToEntPointer
 //
@@ -244,20 +251,35 @@ func IsValidEntPointer(entity uintptr) bool {
 //	@brief Retrieves the pointer to the first active entity.
 //
 //
-//	@return A pointer to the first active entity.
-func GetFirstActiveEntity() uintptr {
-	__retVal := uintptr(C.GetFirstActiveEntity())
+//	@return A handle to the first active entity.
+func GetFirstActiveEntity() int32 {
+	__retVal := int32(C.GetFirstActiveEntity())
 	return __retVal
 }
 
-// GetConcreteEntityListPointer
+// GetPrevActiveEntity
 //
-//	@brief Retrieves a pointer to the concrete entity list.
+//	@brief Retrieves the previous active entity.
 //
 //
-//	@return A pointer to the entity list structure.
-func GetConcreteEntityListPointer() uintptr {
-	__retVal := uintptr(C.GetConcreteEntityListPointer())
+//	@return Handle to the previous entity.
+func GetPrevActiveEntity(entityHandle int32) int32 {
+	var __retVal int32
+	__entityHandle := C.int32_t(entityHandle)
+	__retVal = int32(C.GetPrevActiveEntity(__entityHandle))
+	return __retVal
+}
+
+// GetNextActiveEntity
+//
+//	@brief Retrieves the next active entity.
+//
+//
+//	@return Handle to the next entity.
+func GetNextActiveEntity(entityHandle int32) int32 {
+	var __retVal int32
+	__entityHandle := C.int32_t(entityHandle)
+	__retVal = int32(C.GetNextActiveEntity(__entityHandle))
 	return __retVal
 }
 
@@ -268,7 +290,7 @@ func GetConcreteEntityListPointer() uintptr {
 //	@param classname: The class name of the entity to hook the output for.
 //	@param output: The output event name to hook.
 //	@param callback: The callback function to invoke when the output is fired.
-//	@param type: Whether the hook was in post mode (after processing) or pre mode (before processing).
+//	@param type_: Whether the hook was in post mode (after processing) or pre mode (before processing).
 //
 //	@return True if the hook was successfully added, false otherwise.
 func HookEntityOutput(classname string, output string, callback HookEntityOutputCallback, type_ HookMode) bool {
@@ -297,7 +319,7 @@ func HookEntityOutput(classname string, output string, callback HookEntityOutput
 //	@param classname: The class name of the entity from which to unhook the output.
 //	@param output: The output event name to unhook.
 //	@param callback: The callback function that was previously hooked.
-//	@param type: Whether the hook was in post mode (after processing) or pre mode (before processing).
+//	@param type_: Whether the hook was in post mode (after processing) or pre mode (before processing).
 //
 //	@return True if the hook was successfully removed, false otherwise.
 func UnhookEntityOutput(classname string, output string, callback HookEntityOutputCallback, type_ HookMode) bool {
@@ -314,6 +336,58 @@ func UnhookEntityOutput(classname string, output string, callback HookEntityOutp
 			// Perform cleanup.
 			plugify.DestroyString(&__classname)
 			plugify.DestroyString(&__output)
+		},
+	}.Do()
+	return __retVal
+}
+
+// FindEntityByClassname
+//
+//	@brief Finds an entity by classname with iteration.
+//
+//	@param startFrom: The handle of the entity to start from, or INVALID_EHANDLE_INDEX to start fresh.
+//	@param classname: The class name to search for.
+//
+//	@return The handle of the found entity, or INVALID_EHANDLE_INDEX if none found.
+func FindEntityByClassname(startFrom int32, classname string) int32 {
+	var __retVal int32
+	__startFrom := C.int32_t(startFrom)
+	__classname := plugify.ConstructString(classname)
+	plugify.Block{
+		Try: func() {
+			__retVal = int32(C.FindEntityByClassname(__startFrom, (*C.String)(unsafe.Pointer(&__classname))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__classname)
+		},
+	}.Do()
+	return __retVal
+}
+
+// FindEntityByClassnameNearest
+//
+//	@brief Finds the nearest entity by classname to a point.
+//
+//	@param startFrom: The handle of the entity to start from, or INVALID_EHANDLE_INDEX to start fresh.
+//	@param classname: The class name to search for.
+//	@param origin: The center point to search around.
+//	@param maxRadius: Maximum search radius.
+//
+//	@return The handle of the found entity, or INVALID_EHANDLE_INDEX if none found.
+func FindEntityByClassnameNearest(startFrom int32, classname string, origin plugify.Vector3, maxRadius float32) int32 {
+	var __retVal int32
+	__startFrom := C.int32_t(startFrom)
+	__classname := plugify.ConstructString(classname)
+	__origin := *(*C.Vector3)(unsafe.Pointer(&origin))
+	__maxRadius := C.float(maxRadius)
+	plugify.Block{
+		Try: func() {
+			__retVal = int32(C.FindEntityByClassnameNearest(__startFrom, (*C.String)(unsafe.Pointer(&__classname)), &__origin, __maxRadius))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__classname)
 		},
 	}.Do()
 	return __retVal
@@ -528,7 +602,7 @@ func DispatchSpawn(entityHandle int32) {
 //	@param entityHandle: The handle of the entity to spawn.
 //	@param keys: A vector of keys representing the property names to set on the entity.
 //	@param values: A vector of values corresponding to the keys, representing the property values to set on the entity.
-func DispatchSpawn2(entityHandle int32, keys []string, values []interface{}) {
+func DispatchSpawn2(entityHandle int32, keys []string, values []any) {
 	__entityHandle := C.int32_t(entityHandle)
 	__keys := plugify.ConstructVectorString(keys)
 	__values := plugify.ConstructVectorVariant(values)
@@ -654,11 +728,11 @@ func SetEntityName(entityHandle int32, name string) {
 
 // GetEntityMoveType
 //
-//	@brief Retrieves the movement type of an entity.
+//	@brief Retrieves the movement model of an entity.
 //
-//	@param entityHandle: The handle of the entity whose movement type is to be retrieved.
+//	@param entityHandle: The handle of the entity whose movement model is to be retrieved.
 //
-//	@return The movement type of the entity, or 0 if the entity is invalid.
+//	@return The movement model of the entity, or 0 if the entity is invalid.
 func GetEntityMoveType(entityHandle int32) MoveType {
 	var __retVal MoveType
 	__entityHandle := C.int32_t(entityHandle)
@@ -668,10 +742,10 @@ func GetEntityMoveType(entityHandle int32) MoveType {
 
 // SetEntityMoveType
 //
-//	@brief Sets the movement type of an entity.
+//	@brief Sets the movement model of an entity.
 //
-//	@param entityHandle: The handle of the entity whose movement type is to be set.
-//	@param moveType: The new movement type to set for the entity.
+//	@param entityHandle: The handle of the entity whose movement model is to be set.
+//	@param moveType: The new movement model to set for the entity.
 func SetEntityMoveType(entityHandle int32, moveType MoveType) {
 	__entityHandle := C.int32_t(entityHandle)
 	__moveType := C.int32_t(moveType)
@@ -1572,15 +1646,15 @@ func GetEntityCenter(entityHandle int32) plugify.Vector3 {
 //	@brief Teleports an entity to a specified location and orientation.
 //
 //	@param entityHandle: The handle of the entity to teleport.
-//	@param origin: A pointer to a Vector representing the new absolute position. Can be nullptr.
-//	@param angles: A pointer to a QAngle representing the new orientation. Can be nullptr.
-//	@param velocity: A pointer to a Vector representing the new velocity. Can be nullptr.
-func TeleportEntity(entityHandle int32, origin uintptr, angles uintptr, velocity uintptr) {
+//	@param origin: A pointer to a Vector representing the new absolute position. Use nan vector to not set.
+//	@param angles: A pointer to a QAngle representing the new orientation. Use nan vector to not set.
+//	@param velocity: A pointer to a Vector representing the new velocity. Use nan vector to not set.
+func TeleportEntity(entityHandle int32, origin plugify.Vector3, angles plugify.Vector3, velocity plugify.Vector3) {
 	__entityHandle := C.int32_t(entityHandle)
-	__origin := C.uintptr_t(origin)
-	__angles := C.uintptr_t(angles)
-	__velocity := C.uintptr_t(velocity)
-	C.TeleportEntity(__entityHandle, __origin, __angles, __velocity)
+	__origin := *(*C.Vector3)(unsafe.Pointer(&origin))
+	__angles := *(*C.Vector3)(unsafe.Pointer(&angles))
+	__velocity := *(*C.Vector3)(unsafe.Pointer(&velocity))
+	C.TeleportEntity(__entityHandle, &__origin, &__angles, &__velocity)
 }
 
 // ApplyAbsVelocityImpulseToEntity
@@ -1616,9 +1690,9 @@ func ApplyLocalAngularVelocityImpulseToEntity(entityHandle int32, angImpulse plu
 //	@param activatorHandle: The handle of the entity that initiated the sequence of actions.
 //	@param callerHandle: The handle of the entity sending this event.
 //	@param value: The value associated with the input action.
-//	@param type: The type or classification of the value.
+//	@param type_: The model or classification of the value.
 //	@param outputId: An identifier for tracking the output of this operation.
-func AcceptEntityInput(entityHandle int32, inputName string, activatorHandle int32, callerHandle int32, value interface{}, type_ FieldType, outputId int32) {
+func AcceptEntityInput(entityHandle int32, inputName string, activatorHandle int32, callerHandle int32, value any, type_ FieldType, outputId int32) {
 	__entityHandle := C.int32_t(entityHandle)
 	__inputName := plugify.ConstructString(inputName)
 	__activatorHandle := C.int32_t(activatorHandle)
@@ -1718,9 +1792,9 @@ func DisconnectEntityRedirectedOutput(entityHandle int32, output string, functio
 //	@param activatorHandle: The entity activating the output.
 //	@param callerHandle: The entity that called the output.
 //	@param value: The value associated with the input action.
-//	@param type: The type or classification of the value.
+//	@param type_: The model or classification of the value.
 //	@param delay: Delay in seconds before firing the output.
-func FireEntityOutput(entityHandle int32, outputName string, activatorHandle int32, callerHandle int32, value interface{}, type_ FieldType, delay float32) {
+func FireEntityOutput(entityHandle int32, outputName string, activatorHandle int32, callerHandle int32, value any, type_ FieldType, delay float32) {
 	__entityHandle := C.int32_t(entityHandle)
 	__outputName := plugify.ConstructString(outputName)
 	__activatorHandle := C.int32_t(activatorHandle)
@@ -1811,7 +1885,7 @@ func FollowEntityMerge(entityHandle int32, attachmentHandle int32, boneOrAttachN
 //	@param force: Direction and magnitude of force to apply
 //	@param hitPos: Position where the damage hit occurred
 //	@param damage: Amount of damage to apply
-//	@param damageTypes: Bitfield of damage type flags
+//	@param damageTypes: Bitfield of damage model flags
 //
 //	@return Amount of damage actually applied to the entity
 func TakeEntityDamage(entityHandle int32, inflictorHandle int32, attackerHandle int32, force plugify.Vector3, hitPos plugify.Vector3, damage float32, damageTypes DamageTypes) int32 {

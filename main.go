@@ -63,33 +63,36 @@ func (rs *ResetScorePlugin) OnServerActivate() { // it`s OnMapStart
 func (rs *ResetScorePlugin) onResetScore(playerSlot int32, context s2.CommandCallingContext, arguments []string) s2.ResultType {
 	if s2.IsClientInGame(playerSlot) && !s2.IsFakeClient(playerSlot) && !s2.IsClientSourceTV(playerSlot) {
 		lang := s2.GetClientLanguage(playerSlot)
+		playerHandle := s2.PlayerSlotToEntHandle(playerSlot)
 
 		if s2.GetClientKills(playerSlot) != 0 ||
 			s2.GetClientAssists(playerSlot) != 0 ||
 			s2.GetClientDeaths(playerSlot) != 0 ||
-			s2.GetClientDamage(playerSlot) != 0 {
+			s2.GetClientDamage(playerSlot) != 0 ||
+			s2.GetEntSchema(playerHandle, "CCSPlayerController", "m_iMVPs", 0) != 0 ||
+			s2.GetEntSchema(playerHandle, "CCSPlayerController", "m_iScore", 0) != 0 {
 
 			s2.SetClientKills(playerSlot, 0)
 			s2.SetClientAssists(playerSlot, 0)
 			s2.SetClientDeaths(playerSlot, 0)
 			s2.SetClientDamage(playerSlot, 0)
 
-			playerHandle := s2.PlayerSlotToEntHandle(playerSlot)
 			s2.SetEntSchema(playerHandle, "CCSPlayerController", "m_iMVPs", 0, true, 0)
+			s2.SetEntSchema(playerHandle, "CCSPlayerController", "m_iScore", 0, true, 0)
 
 			switch lang {
-			case "ua":
+			case "ukrainian":
 				s2.PrintToChat(playerSlot, " \x04[ RS ] \x01Ваш рахунок зкинутий!")
-			case "ru":
+			case "russian":
 				s2.PrintToChat(playerSlot, " \x04[ RS ] \x01Ваш счет обнулен!")
 			default:
 				s2.PrintToChat(playerSlot, " \x04[ RS ] \x01You score reseted!")
 			}
 		} else {
 			switch lang {
-			case "ua":
+			case "ukrainian":
 				s2.PrintToChat(playerSlot, " \x04[ RS ] \x01Ваш рахунок вже зкинутий!")
-			case "ru":
+			case "russian":
 				s2.PrintToChat(playerSlot, " \x04[ RS ] \x01Ваш счет уже обнулен!")
 			default:
 				s2.PrintToChat(playerSlot, " \x04[ RS ] \x01You score already reseted!")

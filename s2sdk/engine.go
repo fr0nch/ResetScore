@@ -26,16 +26,21 @@ package s2sdk
 */
 import "C"
 import (
-	"github.com/untrustedmodders/go-plugify"
+	"errors"
 	"reflect"
+	"runtime"
 	"unsafe"
+
+	"github.com/untrustedmodders/go-plugify"
 )
 
+var _ = errors.New("")
 var _ = reflect.TypeOf(0)
+var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.Plugin.Loaded
 
-// Generated with https://github.com/untrustedmodders/plugify-module-golang/blob/main/generator/generator.py from s2sdk (group: engine)
+// Generated from s2sdk (group: engine)
 
 // FindModule
 //
@@ -296,8 +301,8 @@ func IsServerPaused() bool {
 //	@brief Queues a task to be executed on the next frame.
 //
 //	@param callback: A callback function to be executed on the next frame.
-//	@param userData: An array intended to hold user-related data, allowing for elements of any type.
-func QueueTaskForNextFrame(callback TaskCallback, userData []interface{}) {
+//	@param userData: An array intended to hold user-related data, allowing for elements of any model.
+func QueueTaskForNextFrame(callback TaskCallback, userData []any) {
 	__callback := plugify.GetFunctionPointerForDelegate(callback)
 	__userData := plugify.ConstructVectorVariant(userData)
 	plugify.Block{
@@ -316,8 +321,8 @@ func QueueTaskForNextFrame(callback TaskCallback, userData []interface{}) {
 //	@brief Queues a task to be executed on the next world update.
 //
 //	@param callback: A callback function to be executed on the next world update.
-//	@param userData: An array intended to hold user-related data, allowing for elements of any type.
-func QueueTaskForNextWorldUpdate(callback TaskCallback, userData []interface{}) {
+//	@param userData: An array intended to hold user-related data, allowing for elements of any model.
+func QueueTaskForNextWorldUpdate(callback TaskCallback, userData []any) {
 	__callback := plugify.GetFunctionPointerForDelegate(callback)
 	__userData := plugify.ConstructVectorVariant(userData)
 	plugify.Block{

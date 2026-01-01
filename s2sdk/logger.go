@@ -22,16 +22,21 @@ package s2sdk
 */
 import "C"
 import (
-	"github.com/untrustedmodders/go-plugify"
+	"errors"
 	"reflect"
+	"runtime"
 	"unsafe"
+
+	"github.com/untrustedmodders/go-plugify"
 )
 
+var _ = errors.New("")
 var _ = reflect.TypeOf(0)
+var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.Plugin.Loaded
 
-// Generated with https://github.com/untrustedmodders/plugify-module-golang/blob/main/generator/generator.py from s2sdk (group: logger)
+// Generated from s2sdk (group: logger)
 
 // RegisterLoggingChannel
 //

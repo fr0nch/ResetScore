@@ -10,16 +10,21 @@ package s2sdk
 */
 import "C"
 import (
-	"github.com/untrustedmodders/go-plugify"
+	"errors"
 	"reflect"
+	"runtime"
 	"unsafe"
+
+	"github.com/untrustedmodders/go-plugify"
 )
 
+var _ = errors.New("")
 var _ = reflect.TypeOf(0)
+var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.Plugin.Loaded
 
-// Generated with https://github.com/untrustedmodders/plugify-module-golang/blob/main/generator/generator.py from s2sdk (group: timers)
+// Generated from s2sdk (group: timers)
 
 // CreateTimer
 //
@@ -28,10 +33,10 @@ var _ = plugify.Plugin.Loaded
 //	@param delay: The time delay in seconds between each callback execution.
 //	@param callback: The function to be called when the timer expires.
 //	@param flags: Flags that modify the behavior of the timer (e.g., no-map change, repeating).
-//	@param userData: An array intended to hold user-related data, allowing for elements of any type.
+//	@param userData: An array intended to hold user-related data, allowing for elements of any model.
 //
 //	@return A id to the newly created Timer object, or -1 if the timer could not be created.
-func CreateTimer(delay float64, callback TimerCallback, flags TimerFlag, userData []interface{}) uint32 {
+func CreateTimer(delay float64, callback TimerCallback, flags TimerFlag, userData []any) uint32 {
 	var __retVal uint32
 	__delay := C.double(delay)
 	__callback := plugify.GetFunctionPointerForDelegate(callback)
